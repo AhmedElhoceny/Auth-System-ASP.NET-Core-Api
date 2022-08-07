@@ -4,19 +4,16 @@ using Microsoft.Identity.Web.Resource;
 
 namespace El_Lo2ma.Controllers
 {
-    [Authorize]
+    [AllowAnonymous]
     [ApiController]
     [Route("[controller]")]
-    [RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes")]
     public class WeatherForecastController : ControllerBase
     {
-
-
         public WeatherForecastController()
         {
             
         }
-        [HttpGet("OffAhh")]
+        [HttpPost("")]
         public IActionResult Get()
         {
             return Ok();

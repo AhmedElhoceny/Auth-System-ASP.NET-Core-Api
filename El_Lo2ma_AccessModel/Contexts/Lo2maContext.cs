@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace El_Lo2ma_AccessModel.Contexts
 {
-    public class Lo2maContext : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>
+    public class Lo2maContext : IdentityDbContext<ApplicationUser, ApplicationRole,int>
     {
         public Lo2maContext(DbContextOptions<Lo2maContext> options):base(options)
         {
