@@ -2,13 +2,12 @@
 using El_Lo2ma_AccessModel.Contexts;
 using El_Lo2ma_AccessModel.Repositories;
 using El_Lo2ma_DomainModel.Interfaces;
-using El_Lo2ma_DomainModel.Models;
-using El_Lo2ma_Services.IServices.Auth;
-using El_Lo2ma_Services.Services.Auth;
+using El_Lo2ma_DomainModel.Models.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
+using Serilog;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,16 +15,14 @@ var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .Build();
 
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(config)
+    .CreateLogger();
+builder.Host.UseSerilog();
+
 #region UnitOfWork_DependencyInjection
 
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
-
-#endregion
-
-
-#region Services
-
-builder.Services.AddScoped<IAuthServices, AuthServices>();
 
 #endregion
 
@@ -60,24 +57,39 @@ builder.Services.AddControllersWithViews().AddJsonOptions(x =>
                 x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 //***********************************************************************
 
+
+
+//***********************************************************************
 builder.Services.AddCors();
 
 
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+try
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    var app = builder.Build();
+
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseHttpsRedirection();
+
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    app.Run();
+    Log.Information("Application Start....");
+
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
+catch (Exception ex)
+{
+    Log.Fatal(ex,"Application Failed");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
