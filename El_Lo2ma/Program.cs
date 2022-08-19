@@ -5,13 +5,17 @@ using El_Lo2ma_AccessModel.Repositories;
 using El_Lo2ma_DomainModel.Interfaces;
 using El_Lo2ma_DomainModel.Models.Auth;
 using El_Lo2ma_DomainModel.SwaggerFilter;
+using El_Lo2ma_Services.IServices.Auth;
+using El_Lo2ma_Services.Services.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Text.Json.Serialization;
+using UtilitiesManagement.Domain;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = new ConfigurationBuilder()
@@ -27,6 +31,23 @@ builder.Host.UseSerilog();
 
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
+#endregion
+
+#region Localization configuration
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+
+var supportedCultures = new[] { "ar", "en" };
+var localizationOptions =
+    new RequestLocalizationOptions().SetDefaultCulture(supportedCultures[0])
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+
+
+#endregion
+
+#region DependencyInjection
+builder.Services.AddScoped<IAuthUserServices, AuthUserServices>();
 #endregion
 
 // Add services to the container.
@@ -92,7 +113,11 @@ builder.Services.AddIdentity<ApplicationUser,ApplicationRole>(options =>
 builder.Services.AddControllersWithViews().AddJsonOptions(x =>
                 x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 //***********************************************************************
-
+builder.Services.AddControllers().AddDataAnnotationsLocalization(options =>
+{
+    options.DataAnnotationLocalizerProvider = (type, factory) =>
+        factory.Create(typeof(DataAnnotationValidation));
+});
 
 
 //***********************************************************************
@@ -113,6 +138,9 @@ try
     }
 
     app.UseHttpsRedirection();
+
+    app.UseCors(c => c.AllowAnyHeader().AllowAnyMethod().WithOrigins("*"));
+    app.UseRequestLocalization(localizationOptions);
 
     app.UseAuthentication();
     app.UseAuthorization();
