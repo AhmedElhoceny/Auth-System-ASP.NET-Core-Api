@@ -1,4 +1,5 @@
 ﻿using El_Lo2ma_AccessModel.Extensions;
+using El_Lo2ma_AccessModel.Seeds;
 using El_Lo2ma_DomainModel.Models.Auth;
 using El_Lo2ma_DomainModel.Models.Chief;
 using El_Lo2ma_DomainModel.Models.Clients;
@@ -31,6 +32,7 @@ namespace El_Lo2ma_AccessModel.Contexts
 
             foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
                 relationship.DeleteBehavior = DeleteBehavior.NoAction;
+            modelBuilder.Seed();
         }
 
         #region dbsets

@@ -1,4 +1,5 @@
 ﻿using El_Lo2ma.Constants;
+using El_Lo2ma_DomainModel.DTOs.Requests.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,10 +18,10 @@ namespace El_Lo2ma.Areas.Auth
         {
             _logger = logger;
         }
+        [AllowAnonymous]
         [HttpPost(Routes.SignUp)]
-        public async Task<IActionResult> SignUp()
+        public async Task<IActionResult> SignUp([FromBody]AuthUserRegistrationRequest model)
         {
-            
             return Ok();
         }
     }
