@@ -4,6 +4,7 @@ using El_Lo2ma_AccessModel.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace El_Lo2ma_AccessModel.Migrations
 {
     [DbContext(typeof(Lo2maContext))]
-    partial class Lo2maContextModelSnapshot : ModelSnapshot
+    [Migration("20220819185607_SeedingUserTypeData")]
+    partial class SeedingUserTypeData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -2,6 +2,7 @@
 using El_Lo2ma.Constants;
 using El_Lo2ma_AccessModel.Contexts;
 using El_Lo2ma_AccessModel.Repositories;
+using El_Lo2ma_DomainModel.DTOs.JWT;
 using El_Lo2ma_DomainModel.Interfaces;
 using El_Lo2ma_DomainModel.Models.Auth;
 using El_Lo2ma_DomainModel.SwaggerFilter;
@@ -12,8 +13,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using System.Text;
 using System.Text.Json.Serialization;
 using UtilitiesManagement.Domain;
 
@@ -33,6 +36,40 @@ builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
 #endregion
 
+#region JWTConfigration
+//jwt configration
+builder.Services.Configure<JWT>(builder.Configuration.GetSection("JwtSettings"));
+
+var jwtSettings = new JWT();
+builder.Configuration.Bind(nameof(jwtSettings), jwtSettings);
+builder.Services.AddSingleton(jwtSettings);
+
+//to use jwt with authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer
+    (o =>
+    {
+        o.RequireHttpsMetadata = false;
+        o.SaveToken = false;
+        o.TokenValidationParameters = new TokenValidationParameters
+        {
+
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings.SecretKey)),
+            ValidateIssuer = true,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            //RequireExpirationTime = false, // Todo update
+            ValidIssuer = jwtSettings.Issuer,
+            ClockSkew = TimeSpan.Zero,
+
+        };
+    });
+#endregion
+
 #region Localization configuration
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
@@ -50,9 +87,6 @@ var localizationOptions =
 builder.Services.AddScoped<IAuthUserServices, AuthUserServices>();
 #endregion
 
-// Add services to the container.
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

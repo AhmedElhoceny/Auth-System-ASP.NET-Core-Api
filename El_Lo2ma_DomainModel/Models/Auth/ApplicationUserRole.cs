@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -40,5 +41,7 @@ namespace El_Lo2ma_DomainModel.Models.Auth
             get; set;
         }
         public string? HistoryDisc { get; set; }
+        public virtual ApplicationUser User { get; set; }
+        public virtual ApplicationRole Role { get; set; }
     }
 }

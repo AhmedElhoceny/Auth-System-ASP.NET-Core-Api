@@ -2,6 +2,7 @@
 using El_Lo2ma_AccessModel.Constants;
 using El_Lo2ma_DomainModel;
 using El_Lo2ma_DomainModel.DTOs;
+using El_Lo2ma_DomainModel.DTOs.JWT;
 using El_Lo2ma_DomainModel.DTOs.Requests.Auth;
 using El_Lo2ma_DomainModel.DTOs.Responses;
 using El_Lo2ma_DomainModel.Interfaces;
@@ -10,9 +11,13 @@ using El_Lo2ma_Services.IServices.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,16 +29,38 @@ namespace El_Lo2ma_Services.Services.Auth
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IStringLocalizer<ShareResource> _localizer;
         private readonly ILogger<ShareResource> _logger;
+        private readonly IOptions<JWT> _jwt;
 
-        public AuthUserServices(IUnitOfWork unitOfWork,UserManager<ApplicationUser> userManager,IStringLocalizer<ShareResource> localizer,ILogger<ShareResource> logger)
+        public AuthUserServices(IUnitOfWork unitOfWork,UserManager<ApplicationUser> userManager,IStringLocalizer<ShareResource> localizer,ILogger<ShareResource> logger,IOptions<JWT> jwt)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
             _localizer = localizer;
             _logger = logger;
+            _jwt = jwt;
         }
 
-        public async Task<Response<AuthUserRegistrationResponse>> UserRegistration(AuthUserRegistrationRequest model)
+        public async Task<Response<string>> UserLogIn(AuthUserLogInRequest model)
+        {
+            var SearchedUser = await _userManager.FindByNameAsync(model.UserName);
+            if (SearchedUser == null ||! await _userManager.CheckPasswordAsync(SearchedUser,model.PassWord))
+            {
+                return new Response<string>()
+                {
+                    Message = _localizer[AuthLocalizationKeys.UsernameOrPassWordIsWrong],
+                    IsSuccess = false
+                };
+            }
+            var Token =await CreateJwtToken(SearchedUser);
+            return new Response<string>()
+            {
+                IsSuccess = true,
+                Message = _localizer[AuthLocalizationKeys.Hello, model.UserName],
+                Data = new JwtSecurityTokenHandler().WriteToken(Token)
+            };
+        }
+
+        public async Task<Response<AuthUserRegistrationResponse>> UserRegistrationAsync(AuthUserRegistrationRequest model)
         {
             try
             {
@@ -46,6 +73,18 @@ namespace El_Lo2ma_Services.Services.Auth
                         IsSuccess = false
                     };
                 }
+
+                var SearchedUserType = await _unitOfWork.UserType.GetFirstOrDefaultAsync(filter:x => x.Name == model.UserType);
+                if (SearchedUserType == null)
+                {
+                    _logger.LogCritical(_localizer[AuthLocalizationKeys.UserRegistWithNotExistUserType]);
+                    return new Response<AuthUserRegistrationResponse>()
+                    {
+                        Message = _localizer[AuthLocalizationKeys.FailedProcess],
+                        IsSuccess = false
+                    };
+                }
+
                 var UserApp = new ApplicationUser()
                 {
                     UserName = model.UserName,
@@ -54,7 +93,8 @@ namespace El_Lo2ma_Services.Services.Auth
                     EmailConfirmed = true,
                     NormalizedUserName = model.UserName,
                     PhoneNumber = model.Phone,
-                    PhoneNumberConfirmed = true
+                    PhoneNumberConfirmed = true,
+                    UserType_Id = SearchedUserType!.Id
                 };
                 var Result = await _userManager.CreateAsync(UserApp, model.PassWord);
                 if (Result.Succeeded)
@@ -75,6 +115,7 @@ namespace El_Lo2ma_Services.Services.Auth
                         UserId = (await _unitOfWork.User.GetFirstOrDefaultAsync(filter: x => x.UserName == model.UserName)).Id
                     };
                     await _unitOfWork.UserRole.AddAsync(UserRole);
+
                     await _unitOfWork.CompleteAsync();
                     _logger.LogInformation(_localizer[AuthLocalizationKeys.UserRegisterationSuccessfully, model.UserName]);
                     return new Response<AuthUserRegistrationResponse>()
@@ -105,5 +146,34 @@ namespace El_Lo2ma_Services.Services.Auth
                 };
             }
         }
+        private async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
+        {
+            var UserData = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: y => y.Id == user.Id,includeProperties: "UserRoles,UserRoles.Role,UserType");
+
+            var RolesList = new List<Claim>();
+            RolesList.AddRange(UserData.UserRoles.Select(x => new Claim("roles", x.Role.Name)));
+
+            //****************************************************************************
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                //new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim("userId", user.Id),
+            }
+            .Union(RolesList);
+
+
+            var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Value.SecretKey));
+            var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
+
+            var jwtSecurityToken = new JwtSecurityToken(
+                issuer: _jwt.Value.Issuer,
+                claims: claims,
+                expires: UserData.UserType!= null ? DateTime.UtcNow.AddHours(UserData.UserType.ExpirationTime):DateTime.UtcNow.AddHours(8),
+                signingCredentials: signingCredentials);
+            return jwtSecurityToken;
+        }
+
     }
 }

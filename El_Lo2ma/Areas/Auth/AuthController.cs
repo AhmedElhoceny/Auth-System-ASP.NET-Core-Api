@@ -26,7 +26,16 @@ namespace El_Lo2ma.Areas.Auth
         [HttpPost(Routes.SignUp)]
         public async Task<IActionResult> SignUp([FromBody]AuthUserRegistrationRequest model)
         {
-            var Result = await _userServices.UserRegistration(model);
+            var Result = await _userServices.UserRegistrationAsync(model);
+            if (!Result.IsSuccess)
+                return StatusCode(500, Result);
+            return StatusCode(200, Result);
+        }
+        [AllowAnonymous]
+        [HttpPost(Routes.LogIn)]
+        public async Task<IActionResult> LogIn([FromBody] AuthUserLogInRequest model)
+        {
+            var Result = await _userServices.UserLogIn(model);
             if (!Result.IsSuccess)
                 return StatusCode(500, Result);
             return StatusCode(200, Result);

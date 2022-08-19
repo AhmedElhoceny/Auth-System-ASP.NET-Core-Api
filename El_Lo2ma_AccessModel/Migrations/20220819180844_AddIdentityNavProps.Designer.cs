@@ -4,6 +4,7 @@ using El_Lo2ma_AccessModel.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace El_Lo2ma_AccessModel.Migrations
 {
     [DbContext(typeof(Lo2maContext))]
-    partial class Lo2maContextModelSnapshot : ModelSnapshot
+    [Migration("20220819180844_AddIdentityNavProps")]
+    partial class AddIdentityNavProps
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -194,9 +196,6 @@ namespace El_Lo2ma_AccessModel.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<int>("UserType_Id")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedEmail")
@@ -208,8 +207,6 @@ namespace El_Lo2ma_AccessModel.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.HasIndex("TongueMeelId");
-
-                    b.HasIndex("UserType_Id");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -428,48 +425,6 @@ namespace El_Lo2ma_AccessModel.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UserType");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ExpirationTime = 24.0,
-                            InsertDate = new DateTime(2022, 8, 19, 20, 56, 7, 479, DateTimeKind.Local).AddTicks(3458),
-                            IsDeleted = false,
-                            Licenses = "",
-                            Name = "Admin",
-                            UpdateDate = new DateTime(2022, 8, 19, 20, 56, 7, 479, DateTimeKind.Local).AddTicks(3473)
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ExpirationTime = 8.0,
-                            InsertDate = new DateTime(2022, 8, 19, 20, 56, 7, 479, DateTimeKind.Local).AddTicks(3475),
-                            IsDeleted = false,
-                            Licenses = "شهادة صحية , صور البطاقة",
-                            Name = "Chief",
-                            UpdateDate = new DateTime(2022, 8, 19, 20, 56, 7, 479, DateTimeKind.Local).AddTicks(3476)
-                        },
-                        new
-                        {
-                            Id = 3,
-                            ExpirationTime = 24.0,
-                            InsertDate = new DateTime(2022, 8, 19, 20, 56, 7, 479, DateTimeKind.Local).AddTicks(3476),
-                            IsDeleted = false,
-                            Licenses = "رخصة قيادة , صور البطاقة",
-                            Name = "Delivery",
-                            UpdateDate = new DateTime(2022, 8, 19, 20, 56, 7, 479, DateTimeKind.Local).AddTicks(3477)
-                        },
-                        new
-                        {
-                            Id = 4,
-                            ExpirationTime = 8.0,
-                            InsertDate = new DateTime(2022, 8, 19, 20, 56, 7, 479, DateTimeKind.Local).AddTicks(3477),
-                            IsDeleted = false,
-                            Licenses = "",
-                            Name = "Client",
-                            UpdateDate = new DateTime(2022, 8, 19, 20, 56, 7, 479, DateTimeKind.Local).AddTicks(3478)
-                        });
                 });
 
             modelBuilder.Entity("El_Lo2ma_DomainModel.Models.Chief.ChiefPayment", b =>
@@ -1213,8 +1168,8 @@ namespace El_Lo2ma_AccessModel.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "69dd0cb5-d45d-45f4-97b3-c8b5d1562dea",
-                            ConcurrencyStamp = "6ed65b94-5320-45b5-88fe-b12e53f6259e",
+                            Id = "04bb6f49-e2c3-4589-9311-22ddffd1c0ab",
+                            ConcurrencyStamp = "12cc074f-af41-41f3-ace7-9777b29d9e2a",
                             Name = "Admin",
                             InsertDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
@@ -1222,8 +1177,8 @@ namespace El_Lo2ma_AccessModel.Migrations
                         },
                         new
                         {
-                            Id = "4c94d86b-7544-44a3-87d3-d3a2db42ca29",
-                            ConcurrencyStamp = "42b52ee2-f018-4d52-8b22-ecb31246bf03",
+                            Id = "5e5398d1-6df8-4a3a-ae11-29cfaccb7021",
+                            ConcurrencyStamp = "83cae6da-0f99-415f-a162-daf96c0fec1b",
                             Name = "Chief",
                             InsertDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
@@ -1231,8 +1186,8 @@ namespace El_Lo2ma_AccessModel.Migrations
                         },
                         new
                         {
-                            Id = "42944f42-d73f-4efa-8e29-8ad8c0a56e31",
-                            ConcurrencyStamp = "8b12f413-5c83-43e8-93c3-84b0c7c19365",
+                            Id = "62fdea41-057e-4647-ab8a-9e78fe70f1c8",
+                            ConcurrencyStamp = "410f7c30-5ef6-490f-bcd9-7b1b80dfbc77",
                             Name = "Delivery",
                             InsertDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
@@ -1240,8 +1195,8 @@ namespace El_Lo2ma_AccessModel.Migrations
                         },
                         new
                         {
-                            Id = "d637687c-3134-4bca-95a7-e2e7dedb32a9",
-                            ConcurrencyStamp = "1063c2a4-e1be-460b-85c8-ebbfe48ab15c",
+                            Id = "ea52d50a-9017-4b3f-b6cf-630934019653",
+                            ConcurrencyStamp = "89482961-665f-4694-80ce-a1fa27c7e6c8",
                             Name = "Client",
                             InsertDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
@@ -1275,14 +1230,6 @@ namespace El_Lo2ma_AccessModel.Migrations
                         .WithMany("ChiefUsers")
                         .HasForeignKey("TongueMeelId")
                         .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("El_Lo2ma_DomainModel.Models.Auth.UserType", "UserType")
-                        .WithMany("Users")
-                        .HasForeignKey("UserType_Id")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("UserType");
                 });
 
             modelBuilder.Entity("El_Lo2ma_DomainModel.Models.Auth.ApplicationUserClaims", b =>
@@ -1515,11 +1462,6 @@ namespace El_Lo2ma_AccessModel.Migrations
             modelBuilder.Entity("El_Lo2ma_DomainModel.Models.Auth.ApplicationUser", b =>
                 {
                     b.Navigation("UserRoles");
-                });
-
-            modelBuilder.Entity("El_Lo2ma_DomainModel.Models.Auth.UserType", b =>
-                {
-                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("El_Lo2ma_DomainModel.Models.Chief.Feast", b =>

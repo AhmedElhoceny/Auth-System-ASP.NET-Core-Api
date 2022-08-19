@@ -17,5 +17,6 @@ namespace El_Lo2ma_DomainModel.Models.Auth
         public string? InsertBy { get; set; }
         public string? UpdateBy { get; set; }
         public string? DeleteBy { get; set; }
+        public virtual ICollection<ApplicationUserRole> UserRoles { get; set; }
     }
 }

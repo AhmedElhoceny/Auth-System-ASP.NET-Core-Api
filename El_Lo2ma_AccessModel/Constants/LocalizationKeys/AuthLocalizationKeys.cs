@@ -9,6 +9,8 @@
         public static string UserRegisterationFailed { get; set; } = "UserRegisterationFailed";
         public static string Error { get; set; } = "Error";
         public static string UserRegistWithNotExistRole { get; set; } = "UserRegistWithNotExistRole";
+        public static string UserRegistWithNotExistUserType { get; set; } = "UserRegistWithNotExistUserType";
         public static string ThisUserIsExist { get; set; } = "ThisUserIsExist";
+        public static string UsernameOrPassWordIsWrong { get; set; } = "UsernameOrPassWordIsWrong";
     }
 }

@@ -15,5 +15,6 @@ namespace El_Lo2ma_DomainModel.Models.Auth
         public string Name { get; set; }
         public double ExpirationTime { get; set; }
         public string Licenses { get; set; }
+        public ICollection<ApplicationUser> Users { get; set; }
     }
 }

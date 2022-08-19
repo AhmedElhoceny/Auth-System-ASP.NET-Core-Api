@@ -124,10 +124,13 @@
     <value>Failed Process</value>
   </data>
   <data name="Hello" xml:space="preserve">
-    <value>Welcome</value>
+    <value>Welcome {0}</value>
   </data>
   <data name="ThisUserIsExist" xml:space="preserve">
     <value>This User Is Exist</value>
+  </data>
+  <data name="UsernameOrPassWordIsWrong" xml:space="preserve">
+    <value>Username Or PassWord Is Wrong</value>
   </data>
   <data name="UserRegisterationFailed" xml:space="preserve">
     <value>Failed New Registration {0}  :(</value>
@@ -137,6 +140,9 @@
   </data>
   <data name="UserRegistWithNotExistRole" xml:space="preserve">
     <value>User Regist With Not Exist Role</value>
+  </data>
+  <data name="UserRegistWithNotExistUserType" xml:space="preserve">
+    <value>User Regist With Not Exist UserType</value>
   </data>
   <data name="UserSavedSuccessfully" xml:space="preserve">
     <value>User Saved Successfully</value>

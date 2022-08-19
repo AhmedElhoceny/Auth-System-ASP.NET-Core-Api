@@ -10,5 +10,6 @@
 
         // Main Routes
         public const string SignUp = Base + "/auth/signup";
+        public const string LogIn = Base + "/auth/LogIn";
     }
 }

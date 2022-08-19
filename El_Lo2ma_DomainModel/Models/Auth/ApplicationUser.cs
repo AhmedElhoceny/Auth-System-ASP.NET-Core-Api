@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,5 +18,9 @@ namespace El_Lo2ma_DomainModel.Models.Auth
         public string? InsertBy { get  ; set ; }
         public string? UpdateBy { get ; set ; }
         public string? DeleteBy { get ; set ; }
+        public virtual ICollection<ApplicationUserRole> UserRoles { get; set; }
+        public int UserType_Id { get; set; }
+        [ForeignKey(nameof(UserType_Id))]
+        public UserType UserType { get; set; }
     }
 }

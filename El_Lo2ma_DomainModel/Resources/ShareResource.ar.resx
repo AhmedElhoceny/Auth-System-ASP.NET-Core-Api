@@ -124,10 +124,13 @@
     <value>لم تنجح العملية</value>
   </data>
   <data name="Hello" xml:space="preserve">
-    <value>مرحبا</value>
+    <value>مرحبا {0}</value>
   </data>
   <data name="ThisUserIsExist" xml:space="preserve">
     <value>هذا العميل موجود بالفعل</value>
+  </data>
+  <data name="UsernameOrPassWordIsWrong" xml:space="preserve">
+    <value>الاسم أو كلمة السر خاطئة</value>
   </data>
   <data name="UserRegisterationFailed" xml:space="preserve">
     <value>فشل العميل في التسجيل {0}   :(</value>
@@ -137,6 +140,9 @@
   </data>
   <data name="UserRegistWithNotExistRole" xml:space="preserve">
     <value>عميل حاول الدخول باستخدام روول غير موجود</value>
+  </data>
+  <data name="UserRegistWithNotExistUserType" xml:space="preserve">
+    <value>عميل قام بالتسجيل بنوع عميل غير موجود</value>
   </data>
   <data name="UserSavedSuccessfully" xml:space="preserve">
     <value>تم التسجيل بنجاح</value>

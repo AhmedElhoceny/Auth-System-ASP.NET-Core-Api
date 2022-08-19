@@ -33,6 +33,21 @@ namespace El_Lo2ma_AccessModel.Contexts
             foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
                 relationship.DeleteBehavior = DeleteBehavior.NoAction;
             modelBuilder.Seed();
+
+
+            modelBuilder.Entity<ApplicationUser>(user =>
+            {
+                user.HasMany(x => x.UserRoles)
+                .WithOne(e => e.User)
+                .HasForeignKey(x => x.UserId).IsRequired();
+            });
+
+            modelBuilder.Entity<ApplicationRole>(Role =>
+            {
+                Role.HasMany(x => x.UserRoles)
+                .WithOne(y => y.Role)
+                .HasForeignKey(x => x.RoleId).IsRequired();
+            });
         }
 
         #region dbsets

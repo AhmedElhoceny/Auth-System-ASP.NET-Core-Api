@@ -4,6 +4,7 @@ using El_Lo2ma_AccessModel.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace El_Lo2ma_AccessModel.Migrations
 {
     [DbContext(typeof(Lo2maContext))]
-    partial class Lo2maContextModelSnapshot : ModelSnapshot
+    [Migration("20220819182013_AddUserTypeNavProp")]
+    partial class AddUserTypeNavProp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -428,48 +430,6 @@ namespace El_Lo2ma_AccessModel.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UserType");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ExpirationTime = 24.0,
-                            InsertDate = new DateTime(2022, 8, 19, 20, 56, 7, 479, DateTimeKind.Local).AddTicks(3458),
-                            IsDeleted = false,
-                            Licenses = "",
-                            Name = "Admin",
-                            UpdateDate = new DateTime(2022, 8, 19, 20, 56, 7, 479, DateTimeKind.Local).AddTicks(3473)
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ExpirationTime = 8.0,
-                            InsertDate = new DateTime(2022, 8, 19, 20, 56, 7, 479, DateTimeKind.Local).AddTicks(3475),
-                            IsDeleted = false,
-                            Licenses = "شهادة صحية , صور البطاقة",
-                            Name = "Chief",
-                            UpdateDate = new DateTime(2022, 8, 19, 20, 56, 7, 479, DateTimeKind.Local).AddTicks(3476)
-                        },
-                        new
-                        {
-                            Id = 3,
-                            ExpirationTime = 24.0,
-                            InsertDate = new DateTime(2022, 8, 19, 20, 56, 7, 479, DateTimeKind.Local).AddTicks(3476),
-                            IsDeleted = false,
-                            Licenses = "رخصة قيادة , صور البطاقة",
-                            Name = "Delivery",
-                            UpdateDate = new DateTime(2022, 8, 19, 20, 56, 7, 479, DateTimeKind.Local).AddTicks(3477)
-                        },
-                        new
-                        {
-                            Id = 4,
-                            ExpirationTime = 8.0,
-                            InsertDate = new DateTime(2022, 8, 19, 20, 56, 7, 479, DateTimeKind.Local).AddTicks(3477),
-                            IsDeleted = false,
-                            Licenses = "",
-                            Name = "Client",
-                            UpdateDate = new DateTime(2022, 8, 19, 20, 56, 7, 479, DateTimeKind.Local).AddTicks(3478)
-                        });
                 });
 
             modelBuilder.Entity("El_Lo2ma_DomainModel.Models.Chief.ChiefPayment", b =>
@@ -1213,8 +1173,8 @@ namespace El_Lo2ma_AccessModel.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "69dd0cb5-d45d-45f4-97b3-c8b5d1562dea",
-                            ConcurrencyStamp = "6ed65b94-5320-45b5-88fe-b12e53f6259e",
+                            Id = "d2ce90bd-ce4d-40c0-86fd-668f6ecb7924",
+                            ConcurrencyStamp = "3bfdb6c1-259f-4bf2-aefb-66e61effde51",
                             Name = "Admin",
                             InsertDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
@@ -1222,8 +1182,8 @@ namespace El_Lo2ma_AccessModel.Migrations
                         },
                         new
                         {
-                            Id = "4c94d86b-7544-44a3-87d3-d3a2db42ca29",
-                            ConcurrencyStamp = "42b52ee2-f018-4d52-8b22-ecb31246bf03",
+                            Id = "e42bdcd4-7cf9-4405-8055-8bce1580d32f",
+                            ConcurrencyStamp = "e1d1fdfd-9d6e-4883-ba51-2d3fa76a4e19",
                             Name = "Chief",
                             InsertDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
@@ -1231,8 +1191,8 @@ namespace El_Lo2ma_AccessModel.Migrations
                         },
                         new
                         {
-                            Id = "42944f42-d73f-4efa-8e29-8ad8c0a56e31",
-                            ConcurrencyStamp = "8b12f413-5c83-43e8-93c3-84b0c7c19365",
+                            Id = "ff952795-5092-4059-b0d2-da5657965381",
+                            ConcurrencyStamp = "d2656739-c769-4ecd-b9bf-5afce716dedf",
                             Name = "Delivery",
                             InsertDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
@@ -1240,8 +1200,8 @@ namespace El_Lo2ma_AccessModel.Migrations
                         },
                         new
                         {
-                            Id = "d637687c-3134-4bca-95a7-e2e7dedb32a9",
-                            ConcurrencyStamp = "1063c2a4-e1be-460b-85c8-ebbfe48ab15c",
+                            Id = "824e650c-5c64-4752-bb22-a964366f5b5a",
+                            ConcurrencyStamp = "56edb2c3-7279-4d2c-b141-f8ef008e1661",
                             Name = "Client",
                             InsertDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
