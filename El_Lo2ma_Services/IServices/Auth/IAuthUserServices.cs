@@ -14,7 +14,7 @@ namespace El_Lo2ma_Services.IServices.Auth
         Task<Response<AuthUserRegistrationResponse>> UserRegistrationAsync(AuthUserRegistrationRequest model);
         Task<Response<AuthUserLogInResponse>> UserLogIn(AuthUserLogInRequest model);
         Task<Response<AuthUserLogInResponse>> RefreshToken(string? RefreshToken);
-        Task<Response<AuthUserLogInResponse>> RemoveUser(string userId);
+        void RemoveUser(string userId);
 
     }
 }
