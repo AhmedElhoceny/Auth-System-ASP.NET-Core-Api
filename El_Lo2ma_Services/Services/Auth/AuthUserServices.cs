@@ -32,7 +32,7 @@ namespace El_Lo2ma_Services.Services.Auth
         private readonly ILogger<ShareResource> _logger;
         private readonly IOptions<JWT> _jwt;
 
-        public AuthUserServices(IUnitOfWork unitOfWork,UserManager<ApplicationUser> userManager,IStringLocalizer<ShareResource> localizer,ILogger<ShareResource> logger,IOptions<JWT> jwt)
+        public AuthUserServices(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IStringLocalizer<ShareResource> localizer, ILogger<ShareResource> logger, IOptions<JWT> jwt)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
@@ -44,7 +44,7 @@ namespace El_Lo2ma_Services.Services.Auth
         public async Task<Response<AuthUserLogInResponse>> UserLogIn(AuthUserLogInRequest model)
         {
             var SearchedUser = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: x => x.UserName == model.UserName, includeProperties: "RefreshTokenList");
-            if (SearchedUser == null ||! await _userManager.CheckPasswordAsync(SearchedUser,model.PassWord))
+            if (SearchedUser == null || !await _userManager.CheckPasswordAsync(SearchedUser, model.PassWord))
             {
                 return new Response<AuthUserLogInResponse>()
                 {
@@ -52,11 +52,11 @@ namespace El_Lo2ma_Services.Services.Auth
                     IsSuccess = false
                 };
             }
-            var Token =await CreateJwtToken(SearchedUser);
+            var Token = await CreateJwtToken(SearchedUser);
 
             if (SearchedUser.RefreshTokenList != null)
                 _unitOfWork.RefreshTokens.RemoveRange(SearchedUser.RefreshTokenList.ToList());
-            
+
             var RefreshTokenObject = CraeteRefreshToken();
             RefreshTokenObject.UserId = SearchedUser!.Id;
             await _unitOfWork.RefreshTokens.AddAsync(RefreshTokenObject);
@@ -91,7 +91,7 @@ namespace El_Lo2ma_Services.Services.Auth
                     };
                 }
 
-                var SearchedUserType = await _unitOfWork.UserType.GetFirstOrDefaultAsync(filter:x => x.Name == model.UserType);
+                var SearchedUserType = await _unitOfWork.UserType.GetFirstOrDefaultAsync(filter: x => x.Name == model.UserType);
                 if (SearchedUserType == null)
                 {
                     _logger.LogCritical(_localizer[AuthLocalizationKeys.UserRegistWithNotExistUserType]);
@@ -166,7 +166,7 @@ namespace El_Lo2ma_Services.Services.Auth
 
         private async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
         {
-            var UserData = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: y => y.Id == user.Id,includeProperties: "UserRoles,UserRoles.Role,UserType");
+            var UserData = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: y => y.Id == user.Id, includeProperties: "UserRoles,UserRoles.Role,UserType");
 
             var RolesList = new List<Claim>();
             RolesList.AddRange(UserData.UserRoles.Select(x => new Claim("roles", x.Role.Name)));
@@ -182,7 +182,7 @@ namespace El_Lo2ma_Services.Services.Auth
             var jwtSecurityToken = new JwtSecurityToken(
                 issuer: _jwt.Value.Issuer,
                 claims: claims,
-                expires: UserData.UserType!= null ? DateTime.UtcNow.AddHours(UserData.UserType.ExpirationTime):DateTime.UtcNow.AddHours(8),
+                expires: UserData.UserType != null ? DateTime.UtcNow.AddHours(UserData.UserType.ExpirationTime) : DateTime.UtcNow.AddHours(8),
                 signingCredentials: signingCredentials);
             return jwtSecurityToken;
         }
@@ -240,6 +240,15 @@ namespace El_Lo2ma_Services.Services.Auth
                     Message = _localizer[AuthLocalizationKeys.Error]
                 };
             }
+        }
+
+        public async void RemoveUser(string userId)
+        {
+            var user = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: i => i.Id == userId);
+            await _unitOfWork.User.Remove(user);
+            await _unitOfWork.CompleteAsync();
+
+
         }
     }
 }
