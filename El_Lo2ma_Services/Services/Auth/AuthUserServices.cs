@@ -52,14 +52,20 @@ namespace El_Lo2ma_Services.Services.Auth
                     IsSuccess = false
                 };
             }
-            var Token = await CreateJwtToken(SearchedUser);
-
-            if (SearchedUser.RefreshTokenList != null)
-                _unitOfWork.RefreshTokens.RemoveRange(SearchedUser.RefreshTokenList.ToList());
-
+            var Token =await CreateJwtToken(SearchedUser);
             var RefreshTokenObject = CraeteRefreshToken();
-            RefreshTokenObject.UserId = SearchedUser!.Id;
-            await _unitOfWork.RefreshTokens.AddAsync(RefreshTokenObject);
+
+            if (SearchedUser.RefreshTokenList.Count != 0)
+            {
+                SearchedUser.RefreshTokenList.FirstOrDefault().Token = RefreshTokenObject.Token;
+                SearchedUser.RefreshTokenList.FirstOrDefault().ExpirationTime = RefreshTokenObject.ExpirationTime;
+                _unitOfWork.User.Update(SearchedUser);
+            }
+            else
+            {
+                RefreshTokenObject.UserId = SearchedUser!.Id;
+                await _unitOfWork.RefreshTokens.AddAsync(RefreshTokenObject);
+            }
             await _unitOfWork.CompleteAsync();
 
             var ResponseData = new AuthUserLogInResponse()
@@ -215,14 +221,14 @@ namespace El_Lo2ma_Services.Services.Auth
                 }
 
                 var SearchedUser = SearchedRefreshTokenItem.User;
-                await _unitOfWork.RefreshTokens.Remove(SearchedRefreshTokenItem);
+                
 
                 var NewToken = await CreateJwtToken(SearchedUser);
 
                 var NewRefreshToken = CraeteRefreshToken();
-                NewRefreshToken.UserId = SearchedRefreshTokenItem.UserId;
-                await _unitOfWork.RefreshTokens.AddAsync(NewRefreshToken);
-
+                SearchedRefreshTokenItem.Token = NewRefreshToken.Token;
+                SearchedRefreshTokenItem.ExpirationTime = NewRefreshToken.ExpirationTime;
+                _unitOfWork.RefreshTokens.Update(SearchedRefreshTokenItem);
                 await _unitOfWork.CompleteAsync();
 
                 return new Response<AuthUserLogInResponse>()
