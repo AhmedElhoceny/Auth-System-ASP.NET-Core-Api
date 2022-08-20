@@ -22,5 +22,6 @@ namespace El_Lo2ma_DomainModel.Models.Auth
         public int UserType_Id { get; set; }
         [ForeignKey(nameof(UserType_Id))]
         public UserType UserType { get; set; }
+        public ICollection<RefreshToken> RefreshTokenList { get; set; }
     }
 }

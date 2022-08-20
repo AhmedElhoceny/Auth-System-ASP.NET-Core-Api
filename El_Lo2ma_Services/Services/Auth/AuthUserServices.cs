@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -40,23 +41,39 @@ namespace El_Lo2ma_Services.Services.Auth
             _jwt = jwt;
         }
 
-        public async Task<Response<string>> UserLogIn(AuthUserLogInRequest model)
+        public async Task<Response<AuthUserLogInResponse>> UserLogIn(AuthUserLogInRequest model)
         {
-            var SearchedUser = await _userManager.FindByNameAsync(model.UserName);
+            var SearchedUser = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: x => x.UserName == model.UserName, includeProperties: "RefreshTokenList");
             if (SearchedUser == null ||! await _userManager.CheckPasswordAsync(SearchedUser,model.PassWord))
             {
-                return new Response<string>()
+                return new Response<AuthUserLogInResponse>()
                 {
                     Message = _localizer[AuthLocalizationKeys.UsernameOrPassWordIsWrong],
                     IsSuccess = false
                 };
             }
             var Token =await CreateJwtToken(SearchedUser);
-            return new Response<string>()
+
+            if (SearchedUser.RefreshTokenList != null)
+                _unitOfWork.RefreshTokens.RemoveRange(SearchedUser.RefreshTokenList.ToList());
+            
+            var RefreshTokenObject = CraeteRefreshToken();
+            RefreshTokenObject.UserId = SearchedUser!.Id;
+            await _unitOfWork.RefreshTokens.AddAsync(RefreshTokenObject);
+            await _unitOfWork.CompleteAsync();
+
+            var ResponseData = new AuthUserLogInResponse()
+            {
+                Token = new JwtSecurityTokenHandler().WriteToken(Token),
+                RefreshToken = RefreshTokenObject.Token,
+                ExpireOn = RefreshTokenObject.ExpirationTime
+            };
+
+            return new Response<AuthUserLogInResponse>()
             {
                 IsSuccess = true,
                 Message = _localizer[AuthLocalizationKeys.Hello, model.UserName],
-                Data = new JwtSecurityTokenHandler().WriteToken(Token)
+                Data = ResponseData
             };
         }
 
@@ -146,27 +163,22 @@ namespace El_Lo2ma_Services.Services.Auth
                 };
             }
         }
+
         private async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
         {
             var UserData = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: y => y.Id == user.Id,includeProperties: "UserRoles,UserRoles.Role,UserType");
 
             var RolesList = new List<Claim>();
             RolesList.AddRange(UserData.UserRoles.Select(x => new Claim("roles", x.Role.Name)));
-
-            //****************************************************************************
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                //new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("userId", user.Id),
             }
             .Union(RolesList);
-
-
             var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Value.SecretKey));
             var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
-
             var jwtSecurityToken = new JwtSecurityToken(
                 issuer: _jwt.Value.Issuer,
                 claims: claims,
@@ -174,6 +186,60 @@ namespace El_Lo2ma_Services.Services.Auth
                 signingCredentials: signingCredentials);
             return jwtSecurityToken;
         }
+        private RefreshToken CraeteRefreshToken()
+        {
+            var RenderNumber = new byte[32];
+            using var generator = new RNGCryptoServiceProvider();
+            generator.GetBytes(RenderNumber);
+            return new RefreshToken()
+            {
+                ExpirationTime = DateTime.UtcNow.AddHours(8),
+                Token = Convert.ToBase64String(RenderNumber)
+            };
+        }
 
+        public async Task<Response<AuthUserLogInResponse>> RefreshToken(string? RefreshToken)
+        {
+            try
+            {
+                if (RefreshToken == null)
+                    return new Response<AuthUserLogInResponse>() { IsSuccess = false };
+                var SearchedRefreshTokenItem = await _unitOfWork.RefreshTokens.GetFirstOrDefaultAsync(x => x.Token == RefreshToken, includeProperties: "User");
+                if (SearchedRefreshTokenItem == null || SearchedRefreshTokenItem.ExpirationTime < DateTime.UtcNow)
+                {
+                    return new Response<AuthUserLogInResponse>()
+                    {
+                        IsSuccess = false,
+                        Message = _localizer[AuthLocalizationKeys.FailedProcess]
+                    };
+                }
+
+                var SearchedUser = SearchedRefreshTokenItem.User;
+                await _unitOfWork.RefreshTokens.Remove(SearchedRefreshTokenItem);
+
+                var NewToken = await CreateJwtToken(SearchedUser);
+
+                var NewRefreshToken = CraeteRefreshToken();
+                NewRefreshToken.UserId = SearchedRefreshTokenItem.UserId;
+                await _unitOfWork.RefreshTokens.AddAsync(NewRefreshToken);
+
+                await _unitOfWork.CompleteAsync();
+
+                return new Response<AuthUserLogInResponse>()
+                {
+                    Data = new AuthUserLogInResponse() { RefreshToken = NewRefreshToken.Token, ExpireOn = NewRefreshToken.ExpirationTime, Token = new JwtSecurityTokenHandler().WriteToken(NewToken) },
+                    IsSuccess = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response<AuthUserLogInResponse>()
+                {
+                    Errors = new[] { ex.Message },
+                    IsSuccess = false,
+                    Message = _localizer[AuthLocalizationKeys.Error]
+                };
+            }
+        }
     }
 }

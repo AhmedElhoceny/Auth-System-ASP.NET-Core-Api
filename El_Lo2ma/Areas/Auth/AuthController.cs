@@ -36,6 +36,38 @@ namespace El_Lo2ma.Areas.Auth
         public async Task<IActionResult> LogIn([FromBody] AuthUserLogInRequest model)
         {
             var Result = await _userServices.UserLogIn(model);
+
+            if (Result.Data != null)
+            {
+                var CookieOptions = new CookieOptions()
+                {
+                    HttpOnly = true,
+                    Expires = Result.Data.ExpireOn
+                };
+                Response.Cookies.Append("refreshToken", Result.Data.RefreshToken, CookieOptions);
+            }
+
+            if (!Result.IsSuccess)
+                return StatusCode(500, Result);
+            return StatusCode(200, Result);
+        }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost(Routes.RefreshToken)]
+        public async Task<IActionResult> RefreshToken()
+        {
+            var RefreshToken = Request.Cookies["refreshToken"];
+            var Result = await _userServices.RefreshToken(RefreshToken);
+
+            if (Result.Data != null)
+            {
+                var CookieOptions = new CookieOptions()
+                {
+                    HttpOnly = true,
+                    Expires = Result.Data.ExpireOn
+                };
+                Response.Cookies.Append("refreshToken", Result.Data.RefreshToken, CookieOptions);
+            }
+
             if (!Result.IsSuccess)
                 return StatusCode(500, Result);
             return StatusCode(200, Result);

@@ -12,7 +12,8 @@ namespace El_Lo2ma_Services.IServices.Auth
     public interface IAuthUserServices
     {
         Task<Response<AuthUserRegistrationResponse>> UserRegistrationAsync(AuthUserRegistrationRequest model);
-        Task<Response<string>> UserLogIn(AuthUserLogInRequest model);
+        Task<Response<AuthUserLogInResponse>> UserLogIn(AuthUserLogInRequest model);
+        Task<Response<AuthUserLogInResponse>> RefreshToken(string? RefreshToken);
 
     }
 }

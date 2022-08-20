@@ -4,6 +4,7 @@ using El_Lo2ma_AccessModel.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace El_Lo2ma_AccessModel.Migrations
 {
     [DbContext(typeof(Lo2maContext))]
-    partial class Lo2maContextModelSnapshot : ModelSnapshot
+    [Migration("20220820150048_AddRefreshTokenTable")]
+    partial class AddRefreshTokenTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -405,7 +407,7 @@ namespace El_Lo2ma_AccessModel.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshToken");
                 });
 
             modelBuilder.Entity("El_Lo2ma_DomainModel.Models.Auth.UserType", b =>
@@ -460,41 +462,41 @@ namespace El_Lo2ma_AccessModel.Migrations
                         {
                             Id = 1,
                             ExpirationTime = 24.0,
-                            InsertDate = new DateTime(2022, 8, 20, 18, 1, 13, 826, DateTimeKind.Local).AddTicks(3436),
+                            InsertDate = new DateTime(2022, 8, 20, 17, 0, 47, 667, DateTimeKind.Local).AddTicks(1693),
                             IsDeleted = false,
                             Licenses = "",
                             Name = "Admin",
-                            UpdateDate = new DateTime(2022, 8, 20, 18, 1, 13, 826, DateTimeKind.Local).AddTicks(3449)
+                            UpdateDate = new DateTime(2022, 8, 20, 17, 0, 47, 667, DateTimeKind.Local).AddTicks(1703)
                         },
                         new
                         {
                             Id = 2,
                             ExpirationTime = 8.0,
-                            InsertDate = new DateTime(2022, 8, 20, 18, 1, 13, 826, DateTimeKind.Local).AddTicks(3454),
+                            InsertDate = new DateTime(2022, 8, 20, 17, 0, 47, 667, DateTimeKind.Local).AddTicks(1710),
                             IsDeleted = false,
                             Licenses = "شهادة صحية , صور البطاقة",
                             Name = "Chief",
-                            UpdateDate = new DateTime(2022, 8, 20, 18, 1, 13, 826, DateTimeKind.Local).AddTicks(3454)
+                            UpdateDate = new DateTime(2022, 8, 20, 17, 0, 47, 667, DateTimeKind.Local).AddTicks(1710)
                         },
                         new
                         {
                             Id = 3,
                             ExpirationTime = 24.0,
-                            InsertDate = new DateTime(2022, 8, 20, 18, 1, 13, 826, DateTimeKind.Local).AddTicks(3456),
+                            InsertDate = new DateTime(2022, 8, 20, 17, 0, 47, 667, DateTimeKind.Local).AddTicks(1711),
                             IsDeleted = false,
                             Licenses = "رخصة قيادة , صور البطاقة",
                             Name = "Delivery",
-                            UpdateDate = new DateTime(2022, 8, 20, 18, 1, 13, 826, DateTimeKind.Local).AddTicks(3457)
+                            UpdateDate = new DateTime(2022, 8, 20, 17, 0, 47, 667, DateTimeKind.Local).AddTicks(1712)
                         },
                         new
                         {
                             Id = 4,
                             ExpirationTime = 8.0,
-                            InsertDate = new DateTime(2022, 8, 20, 18, 1, 13, 826, DateTimeKind.Local).AddTicks(3458),
+                            InsertDate = new DateTime(2022, 8, 20, 17, 0, 47, 667, DateTimeKind.Local).AddTicks(1713),
                             IsDeleted = false,
                             Licenses = "",
                             Name = "Client",
-                            UpdateDate = new DateTime(2022, 8, 20, 18, 1, 13, 826, DateTimeKind.Local).AddTicks(3459)
+                            UpdateDate = new DateTime(2022, 8, 20, 17, 0, 47, 667, DateTimeKind.Local).AddTicks(1714)
                         });
                 });
 
@@ -1239,8 +1241,8 @@ namespace El_Lo2ma_AccessModel.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "62f728c8-d117-4e9e-ad0f-52eda51d6781",
-                            ConcurrencyStamp = "a1917348-d955-4bf3-9af5-d875010b6c5d",
+                            Id = "5b5108d0-6da9-4e09-99a1-4fbd929b09ec",
+                            ConcurrencyStamp = "0c3eaf65-5a8e-40c0-9f8e-1ac3f49dff29",
                             Name = "Admin",
                             InsertDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
@@ -1248,8 +1250,8 @@ namespace El_Lo2ma_AccessModel.Migrations
                         },
                         new
                         {
-                            Id = "572eba89-af54-40e9-83b2-3c00f126ab5e",
-                            ConcurrencyStamp = "80fa9c09-f72a-4ccf-b42e-56e51b7249c3",
+                            Id = "8c898059-711d-4741-8b9d-04fc2dd58b1e",
+                            ConcurrencyStamp = "ba3943ab-0bdf-45d8-a5a7-7e7e8315974d",
                             Name = "Chief",
                             InsertDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
@@ -1257,8 +1259,8 @@ namespace El_Lo2ma_AccessModel.Migrations
                         },
                         new
                         {
-                            Id = "b08f3001-266e-418d-af1c-74844c66ae2c",
-                            ConcurrencyStamp = "b8a3bb75-dc7f-4404-b20f-578980087f4f",
+                            Id = "bf4346cc-ff5a-4c40-b208-e936b65a5bfd",
+                            ConcurrencyStamp = "d4989998-4c3f-471e-8cd4-4dfcf064ab3e",
                             Name = "Delivery",
                             InsertDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,
@@ -1266,8 +1268,8 @@ namespace El_Lo2ma_AccessModel.Migrations
                         },
                         new
                         {
-                            Id = "ef7a3941-f7bc-47c2-b9f1-e55a8a2cdf4e",
-                            ConcurrencyStamp = "28fc7148-7322-45e3-a834-aa266be53a9b",
+                            Id = "14b81ea8-1015-4900-be0f-2d01a1f991d1",
+                            ConcurrencyStamp = "3cce2cbb-0d57-4c1e-927b-c8857378aba0",
                             Name = "Client",
                             InsertDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsDeleted = false,

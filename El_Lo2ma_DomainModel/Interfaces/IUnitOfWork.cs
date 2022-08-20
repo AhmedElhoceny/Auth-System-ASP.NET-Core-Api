@@ -31,6 +31,7 @@ namespace El_Lo2ma_DomainModel.Interfaces
         public ITongueMeelRepository TongueMeel { get; }
         public ITransactionLocationRepository TransactionLocation { get; }
         public IDeliveryPaymentRepository DeliveryPayment { get; }
+        public IRefreshToken RefreshTokens { get; }
         Task<int> CompleteAsync();
         int Complete();
     }

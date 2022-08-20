@@ -10,6 +10,7 @@
 
         // Main Routes
         public const string SignUp = Base + "/auth/signup";
-        public const string LogIn = Base + "/auth/LogIn";
+        public const string LogIn = Base + "/auth/logIn";
+        public const string RefreshToken = Base + "/auth/refreshtoken";
     }
 }
