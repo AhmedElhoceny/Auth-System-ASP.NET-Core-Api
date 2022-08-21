@@ -52,7 +52,7 @@ namespace El_Lo2ma_Services.Services.Auth
                     IsSuccess = false
                 };
             }
-            var Token =await CreateJwtToken(SearchedUser);
+            var Token = await CreateJwtToken(SearchedUser);
             var RefreshTokenObject = CraeteRefreshToken();
 
             if (SearchedUser.RefreshTokenList.Count != 0)
@@ -221,7 +221,7 @@ namespace El_Lo2ma_Services.Services.Auth
                 }
 
                 var SearchedUser = SearchedRefreshTokenItem.User;
-                
+
 
                 var NewToken = await CreateJwtToken(SearchedUser);
 
@@ -256,5 +256,65 @@ namespace El_Lo2ma_Services.Services.Auth
 
 
         }
+
+        public async Task<Response<AuthUserUpdateRequest>> UpdateUser(AuthUserUpdateRequest model, string userId)
+        {
+            try
+            {
+                var user = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: i => i.Id == userId);
+
+                user.UserName = model.UserName;
+                user.PhoneNumber = model.Phone;
+                user.Email = model.Email;
+                user.PasswordHash = model.PassWord;
+
+                _unitOfWork.User.Update(user);
+                await _unitOfWork.CompleteAsync();
+
+                return new Response<AuthUserUpdateRequest>()
+                {
+                    Data = model,
+                    IsSuccess = true,
+                    IsUpdated = true
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex.Message);
+                return new Response<AuthUserUpdateRequest>()
+                {
+                    Message = _localizer[AuthLocalizationKeys.Error],
+                    Errors = new[] { ex.Message }
+                };
+            }
+
+        }
+
+        public async Task<Response<List<AuthListOfUsersResponse>>> ListOfUsers()
+        {
+           try 
+           {
+                var SearchedData = await _unitOfWork.User.GetAllAsync( filter : x => true);
+
+            return new Response<List<AuthListOfUsersResponse>>()
+            {
+                Data = users,
+                IsSuccess = true
+
+            };
+           }
+           catch (Exception ex)
+            {
+                _logger.LogCritical(ex.Message);
+                return new Response<List<AuthListOfUsersResponse>>()
+                {
+                    Message = _localizer[AuthLocalizationKeys.Error],
+                    Errors = new[] { ex.Message }
+                };
+            }
+        }
+       
+
+    
     }
 }

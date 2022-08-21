@@ -15,6 +15,8 @@ namespace El_Lo2ma_Services.IServices.Auth
         Task<Response<AuthUserLogInResponse>> UserLogIn(AuthUserLogInRequest model);
         Task<Response<AuthUserLogInResponse>> RefreshToken(string? RefreshToken);
         void RemoveUser(string userId);
+        Task<Response<AuthUserUpdateRequest>> UpdateUser(AuthUserUpdateRequest model, string userId);
+        Task<Response<List<AuthListOfUsersResponse>>> ListOfUsers();
 
     }
 }

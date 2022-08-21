@@ -132,9 +132,10 @@ namespace El_Lo2ma_AccessModel.Repositories
             return (IEnumerable<ViewType>)Query.ToList();
         }
 
-        public async Task<IEnumerable<EntityType>> GetAllAsync<ViewType>(Expression<Func<EntityType, bool>> filter = null, Expression<Func<EntityType, ViewType>> Select = null, string? IncludeProperties = null, int? skip = null, int? take = null) where ViewType : class
+        public async Task<IEnumerable<EntityType>> GetAllAsync<ViewType>(Expression<Func<EntityType, bool>>? filter = null, string? IncludeProperties = null, int? skip = null, int? take = null) where ViewType : class
         {
             IQueryable<EntityType> Query = _dbSet.AsNoTracking();
+
             if (filter != null)
             {
                 Query = Query.Where(filter);
@@ -154,10 +155,6 @@ namespace El_Lo2ma_AccessModel.Repositories
             if (take.HasValue)
             {
                 Query = Query.Take(take.Value);
-            }
-            if (Select != null)
-            {
-                Query = (IQueryable<EntityType>)await Query.Select(Select).ToListAsync();
             }
             return await Query.ToListAsync();
         }

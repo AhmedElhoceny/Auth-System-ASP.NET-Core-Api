@@ -9,15 +9,10 @@ namespace El_Lo2ma_DomainModel.Interfaces
 {
     public interface IBaseRepository<EntityType> where EntityType : class
     {
-        Task<IEnumerable<EntityType>> GetAllAsync<ViewType>(
-            Expression<Func<EntityType, bool>> filter = null,
-            Expression<Func<EntityType, ViewType>> Select = null,
-            string? IncludeProperties = null,
-            int? skip = null,
-            int? take = null) where ViewType : class;
+        Task<IEnumerable<EntityType>> GetAllAsync<ViewType>(Expression<Func<EntityType, bool>>? filter = null, string? IncludeProperties = null, int? skip = null, int? take = null) where ViewType : class;
         IEnumerable<ViewType> GetAll<ViewType>(
-            Expression<Func<EntityType, bool>> filter = null,
-            Expression<Func<EntityType, ViewType>> Select = null,
+            Expression<Func<EntityType, bool>>? filter = null,
+            Expression<Func<EntityType, ViewType>>? Select = null,
             string? IncludeProperties = null,
             int? skip = null,
             int? take = null) where ViewType : class;
