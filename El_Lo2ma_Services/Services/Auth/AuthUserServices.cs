@@ -32,7 +32,7 @@ namespace El_Lo2ma_Services.Services.Auth
         private readonly ILogger<ShareResource> _logger;
         private readonly IOptions<JWT> _jwt;
 
-        public AuthUserServices(IUnitOfWork unitOfWork,UserManager<ApplicationUser> userManager,IStringLocalizer<ShareResource> localizer,ILogger<ShareResource> logger,IOptions<JWT> jwt)
+        public AuthUserServices(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IStringLocalizer<ShareResource> localizer, ILogger<ShareResource> logger, IOptions<JWT> jwt)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
@@ -44,7 +44,7 @@ namespace El_Lo2ma_Services.Services.Auth
         public async Task<Response<AuthUserLogInResponse>> UserLogIn(AuthUserLogInRequest model)
         {
             var SearchedUser = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: x => x.UserName == model.UserName, includeProperties: "RefreshTokenList");
-            if (SearchedUser == null ||! await _userManager.CheckPasswordAsync(SearchedUser,model.PassWord))
+            if (SearchedUser == null || !await _userManager.CheckPasswordAsync(SearchedUser, model.PassWord))
             {
                 return new Response<AuthUserLogInResponse>()
                 {
@@ -52,14 +52,20 @@ namespace El_Lo2ma_Services.Services.Auth
                     IsSuccess = false
                 };
             }
-            var Token =await CreateJwtToken(SearchedUser);
-
-            if (SearchedUser.RefreshTokenList != null)
-                _unitOfWork.RefreshTokens.RemoveRange(SearchedUser.RefreshTokenList.ToList());
-            
+            var Token = await CreateJwtToken(SearchedUser);
             var RefreshTokenObject = CraeteRefreshToken();
-            RefreshTokenObject.UserId = SearchedUser!.Id;
-            await _unitOfWork.RefreshTokens.AddAsync(RefreshTokenObject);
+
+            if (SearchedUser.RefreshTokenList.Count != 0)
+            {
+                SearchedUser.RefreshTokenList.FirstOrDefault().Token = RefreshTokenObject.Token;
+                SearchedUser.RefreshTokenList.FirstOrDefault().ExpirationTime = RefreshTokenObject.ExpirationTime;
+                _unitOfWork.User.Update(SearchedUser);
+            }
+            else
+            {
+                RefreshTokenObject.UserId = SearchedUser!.Id;
+                await _unitOfWork.RefreshTokens.AddAsync(RefreshTokenObject);
+            }
             await _unitOfWork.CompleteAsync();
 
             var ResponseData = new AuthUserLogInResponse()
@@ -91,7 +97,7 @@ namespace El_Lo2ma_Services.Services.Auth
                     };
                 }
 
-                var SearchedUserType = await _unitOfWork.UserType.GetFirstOrDefaultAsync(filter:x => x.Name == model.UserType);
+                var SearchedUserType = await _unitOfWork.UserType.GetFirstOrDefaultAsync(filter: x => x.Name == model.UserType);
                 if (SearchedUserType == null)
                 {
                     _logger.LogCritical(_localizer[AuthLocalizationKeys.UserRegistWithNotExistUserType]);
@@ -166,7 +172,7 @@ namespace El_Lo2ma_Services.Services.Auth
 
         private async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
         {
-            var UserData = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: y => y.Id == user.Id,includeProperties: "UserRoles,UserRoles.Role,UserType");
+            var UserData = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: y => y.Id == user.Id, includeProperties: "UserRoles,UserRoles.Role,UserType");
 
             var RolesList = new List<Claim>();
             RolesList.AddRange(UserData.UserRoles.Select(x => new Claim("roles", x.Role.Name)));
@@ -182,7 +188,7 @@ namespace El_Lo2ma_Services.Services.Auth
             var jwtSecurityToken = new JwtSecurityToken(
                 issuer: _jwt.Value.Issuer,
                 claims: claims,
-                expires: UserData.UserType!= null ? DateTime.UtcNow.AddHours(UserData.UserType.ExpirationTime):DateTime.UtcNow.AddHours(8),
+                expires: UserData.UserType != null ? DateTime.UtcNow.AddHours(UserData.UserType.ExpirationTime) : DateTime.UtcNow.AddHours(8),
                 signingCredentials: signingCredentials);
             return jwtSecurityToken;
         }
@@ -215,14 +221,14 @@ namespace El_Lo2ma_Services.Services.Auth
                 }
 
                 var SearchedUser = SearchedRefreshTokenItem.User;
-                await _unitOfWork.RefreshTokens.Remove(SearchedRefreshTokenItem);
+
 
                 var NewToken = await CreateJwtToken(SearchedUser);
 
                 var NewRefreshToken = CraeteRefreshToken();
-                NewRefreshToken.UserId = SearchedRefreshTokenItem.UserId;
-                await _unitOfWork.RefreshTokens.AddAsync(NewRefreshToken);
-
+                SearchedRefreshTokenItem.Token = NewRefreshToken.Token;
+                SearchedRefreshTokenItem.ExpirationTime = NewRefreshToken.ExpirationTime;
+                _unitOfWork.RefreshTokens.Update(SearchedRefreshTokenItem);
                 await _unitOfWork.CompleteAsync();
 
                 return new Response<AuthUserLogInResponse>()
@@ -241,5 +247,74 @@ namespace El_Lo2ma_Services.Services.Auth
                 };
             }
         }
+
+        public async void RemoveUser(string userId)
+        {
+            var user = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: i => i.Id == userId);
+            await _unitOfWork.User.Remove(user);
+            await _unitOfWork.CompleteAsync();
+
+
+        }
+
+        public async Task<Response<AuthUserUpdateRequest>> UpdateUser(AuthUserUpdateRequest model, string userId)
+        {
+            try
+            {
+                var user = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: i => i.Id == userId);
+
+                user.UserName = model.UserName;
+                user.PhoneNumber = model.Phone;
+                user.Email = model.Email;
+                user.PasswordHash = model.PassWord;
+
+                _unitOfWork.User.Update(user);
+                await _unitOfWork.CompleteAsync();
+
+                return new Response<AuthUserUpdateRequest>()
+                {
+                    Data = model,
+                    IsSuccess = true,
+                    IsUpdated = true
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex.Message);
+                return new Response<AuthUserUpdateRequest>()
+                {
+                    Message = _localizer[AuthLocalizationKeys.Error],
+                    Errors = new[] { ex.Message }
+                };
+            }
+
+        }
+
+        public async Task<Response<List<AuthListOfUsersResponse>>> ListOfUsers()
+        {
+           try 
+           {
+                var SearchedData = await _unitOfWork.User.GetAllAsync( filter : x => true);
+
+            return new Response<List<AuthListOfUsersResponse>>()
+            {
+                Data = users,
+                IsSuccess = true
+
+            };
+           }
+           catch (Exception ex)
+            {
+                _logger.LogCritical(ex.Message);
+                return new Response<List<AuthListOfUsersResponse>>()
+                {
+                    Message = _localizer[AuthLocalizationKeys.Error],
+                    Errors = new[] { ex.Message }
+                };
+            }
+        }
+       
+
+    
     }
 }
