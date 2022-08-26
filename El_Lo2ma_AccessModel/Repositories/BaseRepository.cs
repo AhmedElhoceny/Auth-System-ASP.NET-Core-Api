@@ -102,7 +102,7 @@ namespace El_Lo2ma_AccessModel.Repositories
             return await Query.FirstOrDefaultAsync();
         }
 
-        public IEnumerable<ViewType> GetAll<ViewType>(Expression<Func<EntityType, bool>> filter = null, Expression<Func<EntityType, ViewType>> Select = null, string? IncludeProperties = null, int? skip = null, int? take = null) where ViewType : class
+        public IEnumerable<EntityType> GetAll<ViewType>(Expression<Func<EntityType, bool>> filter = null, Expression<Func<EntityType, IQueryable<EntityType>>> Select = null, string? IncludeProperties = null, int? skip = null, int? take = null) where ViewType : class
         {
             IQueryable<EntityType> Query = _dbSet.AsNoTracking();
             if (filter != null)
@@ -129,10 +129,10 @@ namespace El_Lo2ma_AccessModel.Repositories
             {
                 Query = (IQueryable<EntityType>)Query.Select(Select).ToList();
             }
-            return (IEnumerable<ViewType>)Query.ToList();
+            return Query.ToList();
         }
 
-        public async Task<IEnumerable<EntityType>> GetAllAsync<ViewType>(Expression<Func<EntityType, bool>> filter = null, Expression<Func<EntityType, ViewType>> Select = null, string? IncludeProperties = null, int? skip = null, int? take = null) where ViewType : class
+        public async Task<IEnumerable<EntityType>> GetAllAsync<ViewType>(Expression<Func<EntityType, bool>> filter = null, Expression<Func<EntityType, IQueryable<EntityType>>> Select = null, string? IncludeProperties = null, int? skip = null, int? take = null) where ViewType : class
         {
             IQueryable<EntityType> Query = _dbSet.AsNoTracking();
             if (filter != null)

@@ -11,13 +11,13 @@ namespace El_Lo2ma_DomainModel.Interfaces
     {
         Task<IEnumerable<EntityType>> GetAllAsync<ViewType>(
             Expression<Func<EntityType, bool>> filter = null,
-            Expression<Func<EntityType, ViewType>> Select = null,
+            Expression<Func<EntityType, IQueryable<EntityType>>> Select = null,
             string? IncludeProperties = null,
             int? skip = null,
             int? take = null) where ViewType : class;
-        IEnumerable<ViewType> GetAll<ViewType>(
+        IEnumerable<EntityType> GetAll<ViewType>(
             Expression<Func<EntityType, bool>> filter = null,
-            Expression<Func<EntityType, ViewType>> Select = null,
+            Expression<Func<EntityType, IQueryable<EntityType>>> Select = null,
             string? IncludeProperties = null,
             int? skip = null,
             int? take = null) where ViewType : class;
