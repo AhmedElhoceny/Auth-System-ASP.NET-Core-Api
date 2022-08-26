@@ -72,5 +72,49 @@ namespace El_Lo2ma.Areas.Auth
                 return StatusCode(500, Result);
             return StatusCode(200, Result);
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet(Routes.ListOfUsers)]
+        public async Task<IActionResult> ListOfusers()
+        {
+            var Data = await _userServices.ListOfUsers();
+            if (!Data.IsSuccess)
+            {
+                return StatusCode(500, Data);
+            }
+            return Ok(Data);
+        }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPut(Routes.UpdateUser)]
+        public async Task<IActionResult> UpdateUser(AuthUserUpdateRequest model, string userId)
+        {
+            var Data = await _userServices.UpdateUser(model, userId);
+            if (!Data.IsSuccess)
+            {
+                return StatusCode(500, Data);
+            }
+            return Ok(Data);
+        }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpDelete(Routes.RemoveUser)]
+        public async Task<IActionResult> RemoveUser(string UserId)
+        {
+            var Data = await _userServices.RemoveUser(UserId);
+            if (!Data.IsSuccess)
+            {
+                return StatusCode(500, Data);
+            }
+            return Ok(Data);
+        }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet(Routes.ListOfRoles)]
+        public async Task<IActionResult> ListOfRoles()
+        {
+            var Data = await _userServices.ListOfRoles();
+            if (!Data.IsSuccess)
+            {
+                return StatusCode(500, Data);
+            }
+            return Ok(Data);
+        }
     }
 }

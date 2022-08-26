@@ -12,5 +12,9 @@
         public const string SignUp = Base + "/auth/signup";
         public const string LogIn = Base + "/auth/logIn";
         public const string RefreshToken = Base + "/auth/refreshtoken";
+        public const string ListOfUsers = Base + "/auth/listofusers";
+        public const string RemoveUser = Base + "/auth/removeuser/{UserId}";
+        public const string UpdateUser = Base + "/auth/updateuser/{userId}";
+        public const string ListOfRoles = Base + "/auth/listofroles";
     }
 }

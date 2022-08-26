@@ -1,6 +1,7 @@
 ﻿using El_Lo2ma_DomainModel.DTOs;
 using El_Lo2ma_DomainModel.DTOs.Requests.Auth;
 using El_Lo2ma_DomainModel.DTOs.Responses;
+using El_Lo2ma_DomainModel.DTOs.Responses.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +15,9 @@ namespace El_Lo2ma_Services.IServices.Auth
         Task<Response<AuthUserRegistrationResponse>> UserRegistrationAsync(AuthUserRegistrationRequest model);
         Task<Response<AuthUserLogInResponse>> UserLogIn(AuthUserLogInRequest model);
         Task<Response<AuthUserLogInResponse>> RefreshToken(string? RefreshToken);
-        void RemoveUser(string userId);
+        Task<Response<string>> RemoveUser(string userId);
         Task<Response<AuthUserUpdateRequest>> UpdateUser(AuthUserUpdateRequest model, string userId);
         Task<Response<List<AuthListOfUsersResponse>>> ListOfUsers();
-
+        Task<Response<List<SelectListIdString>>> ListOfRoles();
     }
 }

@@ -12,5 +12,6 @@
         public static string UserRegistWithNotExistUserType { get; set; } = "UserRegistWithNotExistUserType";
         public static string ThisUserIsExist { get; set; } = "ThisUserIsExist";
         public static string UsernameOrPassWordIsWrong { get; set; } = "UsernameOrPassWordIsWrong";
+        public static string Deleted { get; set; } = "Deleted";
     }
 }

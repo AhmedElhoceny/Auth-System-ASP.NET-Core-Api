@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace El_Lo2ma_DomainModel.DTOs.Responses
 {
-    public class AuthListOfUsersResponse
+    public class SelectListIdString
     {
-        public string UserId { get; set; }
-        public string UserName { get; set; }
+        public string Id { get; set; }
+        public string Name { get; set; }
     }
 }

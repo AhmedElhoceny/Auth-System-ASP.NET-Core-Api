@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace El_Lo2ma_DomainModel.DTOs.Responses
+namespace El_Lo2ma_DomainModel.DTOs.Responses.Auth
 {
     public class AuthUserLogInResponse
     {

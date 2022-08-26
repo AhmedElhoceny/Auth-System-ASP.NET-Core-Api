@@ -10,211 +10,379 @@ using System.Threading.Tasks;
 
 namespace El_Lo2ma_AccessModel.Repositories
 {
-    public class BaseRepository<EntityType> : IBaseRepository<EntityType> where EntityType : class
+    public class BaseRepository<T> : IBaseRepository<T> where T : class
     {
-        private readonly Lo2maContext _DbCon;
-        internal DbSet<EntityType> _dbSet;
+        internal DbSet<T> dbSet;
 
         public BaseRepository(Lo2maContext DbCon)
         {
-            _DbCon = DbCon;
-            this._dbSet = DbCon.Set<EntityType>();
+            this.dbSet = DbCon.Set<T>();
         }
-        public async Task<EntityType> AddAsync(EntityType entity)
+        //GetByIdAsync method use tracking to get object (to update ,insert)
+        public async Task<T> GetByIdAsync(int id)
         {
-            await _dbSet.AddAsync(entity);
-            return entity;
-        }
-
-        public async Task<IEnumerable<EntityType>> AddRangeAsync(IEnumerable<EntityType> entities)
-        {
-            await _dbSet.AddRangeAsync(entities);
-            return entities;
+            return await dbSet.FindAsync(id);
         }
 
-        public async Task<bool> AnyAsync(Expression<Func<EntityType, bool>> filter = null)
+        public virtual async Task<IEnumerable<T>> overrideGetList()
         {
-            return await _dbSet.AnyAsync(filter);
+            IQueryable<T> query = dbSet.AsNoTracking();
+            return await query.ToListAsync();
         }
+        public async Task<IEnumerable<TType>> GetSpecificSelectAsync<TType>(
+            Expression<Func<T, bool>> filter,
+            Expression<Func<T, TType>> select,
+            bool ignoreQueryFilters = false,
+            string includeProperties = null,
+            int? skip = null,
+            int? take = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null
 
-        public void Attach(EntityType entity)
+            ) where TType : class
         {
-            _dbSet.Attach(entity);
-        }
 
-        public Task<int> Count(Expression<Func<EntityType, bool>> filter = null)
-        {
-            return _dbSet.CountAsync(filter);
-        }
+            IQueryable<T> query = dbSet.AsNoTracking();
+            if (ignoreQueryFilters)
+            {
+                query = query.IgnoreQueryFilters();
+            }
+            if (includeProperties != null)
+            {
+                query.AsSplitQuery();
+                foreach (var includeProperty in includeProperties.Split(new char[] { ',' },
+                    StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProperty).IgnoreQueryFilters();
+                }
+            }
 
-        public async Task<bool> ExistAsync(Expression<Func<EntityType, bool>> filter = null, string includeProperties = null)
-        {
-            IQueryable<EntityType> Query = _dbSet.AsNoTracking();
             if (filter != null)
             {
-                Query = Query.Where(filter);
+                query = query.Where(filter);
             }
-            if (!string.IsNullOrEmpty(includeProperties))
+            if (orderBy != null)
+                query = orderBy(query);
+
+            if (skip.HasValue)
+            {
+                query = query.Skip(skip.Value);
+            }
+            if (take.HasValue)
+            {
+                query = query.Take(take.Value);
+            }
+
+            var x = await query.Select(select).ToListAsync();
+            return x;
+        }
+        public async Task<IEnumerable<T>> GetAllAsync(
+            Expression<Func<T, bool>> filter = null,
+            Expression<Func<T, IQueryable<T>>> select = null,
+            Expression<Func<T, T>> selector = null,
+            Func<IQueryable<T>,
+            IOrderedQueryable<T>> orderBy = null,
+            Expression<Func<T, bool>> includeFilter = null,
+            string includeProperties = null
+            , bool ignoreQueryFilters = false,
+            int? skip = null,
+            int? take = null)
+        {
+            IQueryable<T> query = dbSet.AsNoTracking();
+            if (ignoreQueryFilters)
+            {
+                query = query.IgnoreQueryFilters();
+            }
+            //example var customers = context.Customers.IncludeFilter(x => x.Invoices.Where(y => !y.IsSoftDeleted))
+            if (includeFilter is not null)
+            {
+                query = query.Include(includeFilter);
+            }
+
+            if (select != null)
+            {
+                query = (IQueryable<T>)query.Select(select);
+            }
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            if (includeProperties != null)
             {
                 foreach (var includeProperty in includeProperties.Split(new char[] { ',' },
                     StringSplitOptions.RemoveEmptyEntries))
                 {
-                    Query = Query.Include(includeProperty);
+                    query = query.Include(includeProperty)/*.IgnoreQueryFilters()*/;
                 }
             }
-            var result = await Query.FirstOrDefaultAsync() is not null;
+
+            if (skip.HasValue)
+            {
+                query = query.Skip(skip.Value);
+            }
+
+            if (take.HasValue)
+            {
+                query = query.Take(take.Value);
+            }
+
+            if (orderBy != null)
+            {
+
+                return await orderBy(query).ToListAsync();
+            }
+
+            return await query.ToListAsync();
+        }
+
+        public IEnumerable<T> GetAll(
+            Expression<Func<T, bool>> filter = null,
+            Expression<Func<T, IQueryable<T>>> select = null,
+            Expression<Func<T, T>> selector = null,
+            Func<IQueryable<T>,
+            IOrderedQueryable<T>> orderBy = null,
+            Expression<Func<T, bool>> includeFilter = null,
+            string includeProperties = null
+            , bool ignoreQueryFilters = false,
+            int? skip = null,
+            int? take = null)
+        {
+            IQueryable<T> query = dbSet.AsNoTracking();
+            if (ignoreQueryFilters)
+            {
+                query = query.IgnoreQueryFilters();
+            }
+            //example var customers = context.Customers.IncludeFilter(x => x.Invoices.Where(y => !y.IsSoftDeleted))
+            if (includeFilter is not null)
+            {
+                query = query.Include(includeFilter);
+            }
+
+            if (select != null)
+            {
+                query = (IQueryable<T>)query.Select(select);
+            }
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            if (includeProperties != null)
+            {
+                foreach (var includeProperty in includeProperties.Split(new char[] { ',' },
+                    StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProperty)/*.IgnoreQueryFilters()*/;
+                }
+            }
+
+            if (skip.HasValue)
+            {
+                query = query.Skip(skip.Value);
+            }
+
+            if (take.HasValue)
+            {
+                query = query.Take(take.Value);
+            }
+
+            if (orderBy != null)
+            {
+
+                return orderBy(query).ToList();
+            }
+
+            return query.ToList();
+        }
+
+
+
+
+
+        public async Task<bool> ExistAsync(int id)
+        {
+            var entity = await dbSet.FindAsync(id);
+            return entity is not null;
+        }
+
+        public async Task<bool> ExistAsync(Expression<Func<T, bool>> filter = null, string includeProperties = null, bool ignoreQueryFilters = false
+          )
+        {
+            IQueryable<T> query = dbSet.AsNoTracking();
+            if (ignoreQueryFilters)
+            {
+                query = query.IgnoreQueryFilters();
+            }
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            if (includeProperties != null)
+            {
+                foreach (var includeProperty in includeProperties.Split(new char[] { ',' },
+                    StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProperty);
+                }
+            }
+
+            var result = await query.FirstOrDefaultAsync() is not null;
             return result;
         }
 
-        public EntityType FindItem(Expression<Func<EntityType, bool>> filter = null, string? IncludeProperties = null)
+        public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter = null,
+            string includeProperties = null, bool ignoreQueryFilters = false
+              , Func<IQueryable<T>,
+            IOrderedQueryable<T>> orderBy = null
+            )
         {
-            IQueryable<EntityType> Query = _dbSet.AsNoTracking();
-            if (filter != null)
+            IQueryable<T> query = dbSet.AsNoTracking();
+            if (ignoreQueryFilters)
             {
-                Query = Query.Where(filter);
+                query = query.IgnoreQueryFilters();
             }
-            if (!string.IsNullOrEmpty(IncludeProperties))
-            {
-                foreach (var includeProperty in IncludeProperties.Split(new char[] { ',' },
-                    StringSplitOptions.RemoveEmptyEntries))
-                {
-                    Query = Query.Include(includeProperty);
-                }
-            }
-            return Query.FirstOrDefault();
-        }
-
-        public async Task<EntityType> FindItemAsync(Expression<Func<EntityType, bool>> filter = null, string? IncludeProperties = null) 
-        {
-            IQueryable<EntityType> Query = _dbSet.AsNoTracking();
-            if (filter != null)
-            {
-                Query = Query.Where(filter);
-            }
-            if (!string.IsNullOrEmpty(IncludeProperties))
-            {
-                foreach (var includeProperty in IncludeProperties.Split(new char[] { ',' },
-                    StringSplitOptions.RemoveEmptyEntries))
-                {
-                    Query = Query.Include(includeProperty);
-                }
-            }
-            return await Query.FirstOrDefaultAsync();
-        }
-
-        public IEnumerable<EntityType> GetAll<ViewType>(Expression<Func<EntityType, bool>> filter = null, Expression<Func<EntityType, IQueryable<EntityType>>> Select = null, string? IncludeProperties = null, int? skip = null, int? take = null) where ViewType : class
-        {
-            IQueryable<EntityType> Query = _dbSet.AsNoTracking();
-            if (filter != null)
-            {
-                Query = Query.Where(filter);
-            }
-            if (!string.IsNullOrEmpty(IncludeProperties))
-            {
-                foreach (var includeProperty in IncludeProperties.Split(new char[] { ',' },
-                    StringSplitOptions.RemoveEmptyEntries))
-                {
-                    Query = Query.Include(includeProperty);
-                }
-            }
-            if (skip.HasValue)
-            {
-                Query = Query.Skip(skip.Value);
-            }
-            if (take.HasValue)
-            {
-                Query = Query.Take(take.Value);
-            }
-            if (Select != null)
-            {
-                Query = (IQueryable<EntityType>)Query.Select(Select).ToList();
-            }
-            return Query.ToList();
-        }
-
-        public async Task<IEnumerable<EntityType>> GetAllAsync<ViewType>(Expression<Func<EntityType, bool>> filter = null, Expression<Func<EntityType, IQueryable<EntityType>>> Select = null, string? IncludeProperties = null, int? skip = null, int? take = null) where ViewType : class
-        {
-            IQueryable<EntityType> Query = _dbSet.AsNoTracking();
 
             if (filter != null)
             {
-                Query = Query.Where(filter);
+                query = query.Where(filter);
             }
-            if (!string.IsNullOrEmpty(IncludeProperties))
-            {
-                foreach (var includeProperty in IncludeProperties.Split(new char[] { ',' },
-                    StringSplitOptions.RemoveEmptyEntries))
-                {
-                    Query = Query.Include(includeProperty);
-                }
-            }
-            if (skip.HasValue)
-            {
-                Query = Query.Skip(skip.Value);
-            }
-            if (take.HasValue)
-            {
-                Query = Query.Take(take.Value);
-            }
-            return await Query.ToListAsync();
-        }
 
-        public EntityType GetFirstOrDefault(Expression<Func<EntityType, bool>> filter = null, string includeProperties = null)
-        {
-            IQueryable<EntityType> Query = _dbSet.AsNoTracking();
-            if (filter != null)
-            {
-                Query = Query.Where(filter);
-            }
-            if (!string.IsNullOrEmpty(includeProperties))
+            if (includeProperties != null)
             {
                 foreach (var includeProperty in includeProperties.Split(new char[] { ',' },
                     StringSplitOptions.RemoveEmptyEntries))
                 {
-                    Query = Query.Include(includeProperty);
+                    query = query.Include(includeProperty);
                 }
             }
-            return Query.FirstOrDefault();
+            if (orderBy != null)
+            {
+
+                return await orderBy(query).FirstOrDefaultAsync();
+            }
+            return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<EntityType> GetFirstOrDefaultAsync(Expression<Func<EntityType, bool>> filter = null, string includeProperties = null)
+        public async Task<T> AddAsync(T entity)
         {
-            IQueryable<EntityType> Query = _dbSet.AsNoTracking();
+            await dbSet.AddAsync(entity);
+            return entity;
+        }
+        public async Task<IEnumerable<T>> AddRangeAsync(IEnumerable<T> entities)
+        {
+            await dbSet.AddRangeAsync(entities);
+            return entities;
+        }
+        public async Task<T> Remove(T entity)
+        {
+
+            dbSet.Remove(entity);
+            return entity;
+            //return await _context.SaveChangesAsync() > 0;
+
+        }
+
+        //public async Task<bool> RemoveAsync(int id)
+        //{
+        //    T removedEntity = await dbSet.FindAsync(id);
+        //    return await RemoveAsync(removedEntity);
+
+        //}
+
+        public T Update(T entity)
+        {
+            dbSet.Update(entity);
+            return entity;
+        }
+
+
+        public async Task<int> CountAsync(Expression<Func<T, bool>> filter = null, bool ignoreQueryFilters = false)
+        {
+            IQueryable<T> query = dbSet.AsNoTracking();
+            if (ignoreQueryFilters)
+            {
+                query = query.IgnoreQueryFilters();
+            }
             if (filter != null)
             {
-                Query = Query.Where(filter);
+                query = query.Where(filter);
             }
-            if (!string.IsNullOrEmpty(includeProperties))
+
+            return await query.CountAsync();
+        }
+        public int Count(Expression<Func<T, bool>> filter = null, bool ignoreQueryFilters = false)
+        {
+            IQueryable<T> query = dbSet.AsNoTracking();
+            if (ignoreQueryFilters)
+            {
+                query = query.IgnoreQueryFilters();
+            }
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            return query.Count();
+        }
+        public async Task<bool> AnyAsync(Expression<Func<T, bool>> filter = null, bool ignoreQueryFilters = false)
+        {
+            IQueryable<T> query = dbSet.AsNoTracking();
+            if (ignoreQueryFilters)
+            {
+                query = query.IgnoreQueryFilters();
+            }
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+            return await query.AnyAsync();
+        }
+        public void Attach(T entity)
+        {
+
+            dbSet.Attach(entity);
+        }
+
+        public void RemoveRange(IEnumerable<T> entities) =>
+                dbSet.RemoveRange(entities);
+
+        public void UpdateRange(IEnumerable<T> entities) =>
+            dbSet.UpdateRange(entities);
+
+        public T GetFirstOrDefault(Expression<Func<T, bool>> filter = null, string includeProperties = null, bool ignoreQueryFilters = false, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null)
+        {
+            IQueryable<T> query = dbSet.AsNoTracking();
+            if (ignoreQueryFilters)
+            {
+                query = query.IgnoreQueryFilters();
+            }
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            if (includeProperties != null)
             {
                 foreach (var includeProperty in includeProperties.Split(new char[] { ',' },
                     StringSplitOptions.RemoveEmptyEntries))
                 {
-                    Query = Query.Include(includeProperty);
+                    query = query.Include(includeProperty);
                 }
             }
-            return await Query.FirstOrDefaultAsync();
+            if (orderBy != null)
+            {
+
+                return orderBy(query).FirstOrDefault();
+            }
+            return query.FirstOrDefault();
         }
 
-        public async Task<EntityType> Remove(EntityType entity)
+        public IEnumerable<T> AddRange(IEnumerable<T> entities)
         {
-            _dbSet.Remove(entity);
-            return entity;
-        }
-
-        public async void RemoveRange(IEnumerable<EntityType> entities)
-        {
-            _dbSet.RemoveRange(entities);
-        }
-
-        public EntityType Update(EntityType entity)
-        {
-            _dbSet.Update(entity);
-            return entity;
-        }
-
-        public void UpdateRange(IEnumerable<EntityType> entities)
-        {
-            _dbSet.UpdateRange(entities);
+            dbSet.AddRange(entities);
+            return entities;
         }
     }
 }

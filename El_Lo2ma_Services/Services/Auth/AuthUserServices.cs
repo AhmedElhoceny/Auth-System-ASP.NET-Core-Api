@@ -5,6 +5,7 @@ using El_Lo2ma_DomainModel.DTOs;
 using El_Lo2ma_DomainModel.DTOs.JWT;
 using El_Lo2ma_DomainModel.DTOs.Requests.Auth;
 using El_Lo2ma_DomainModel.DTOs.Responses;
+using El_Lo2ma_DomainModel.DTOs.Responses.Auth;
 using El_Lo2ma_DomainModel.Interfaces;
 using El_Lo2ma_DomainModel.Models.Auth;
 using El_Lo2ma_Services.IServices.Auth;
@@ -248,13 +249,28 @@ namespace El_Lo2ma_Services.Services.Auth
             }
         }
 
-        public async void RemoveUser(string userId)
+        public async Task<Response<string>> RemoveUser(string userId)
         {
-            var user = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: i => i.Id == userId);
-            await _unitOfWork.User.Remove(user);
-            await _unitOfWork.CompleteAsync();
-
-
+            try
+            {
+                var user = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: i => i.Id == userId);
+                await _unitOfWork.User.Remove(user);
+                await _unitOfWork.CompleteAsync();
+                return new Response<string>()
+                {
+                    Data = _localizer[AuthLocalizationKeys.Deleted],
+                    IsSuccess = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response<string>()
+                {
+                    Errors = new[] { ex.Message },
+                    IsSuccess = false,
+                    Message = _localizer[AuthLocalizationKeys.Error]
+                };
+            }
         }
 
         public async Task<Response<AuthUserUpdateRequest>> UpdateUser(AuthUserUpdateRequest model, string userId)
@@ -294,14 +310,14 @@ namespace El_Lo2ma_Services.Services.Auth
         {
            try 
            {
-                var SearchedData = await _unitOfWork.User.GetAllAsync( filter : x => true);
+                var SearchedData = (await _unitOfWork.User.GetSpecificSelectAsync( filter : x => true,select:x => new AuthListOfUsersResponse() { UserId = x.Id,UserName = x.UserName})).ToList();
 
-            return new Response<List<AuthListOfUsersResponse>>()
-            {
-                Data = users,
-                IsSuccess = true
+                return new Response<List<AuthListOfUsersResponse>>()
+                {
+                    Data = SearchedData,
+                    IsSuccess = true
 
-            };
+                };
            }
            catch (Exception ex)
             {
@@ -313,8 +329,29 @@ namespace El_Lo2ma_Services.Services.Auth
                 };
             }
         }
-       
-
-    
+        public async Task<Response<List<SelectListIdString>>> ListOfRoles()
+        {
+            try
+            {
+                var Data = (await _unitOfWork.Role.GetSpecificSelectAsync(filter: x => true, select: x => new SelectListIdString()
+                {
+                    Id = x.Id,
+                    Name = x.Name
+                })).ToList();
+                return new Response<List<SelectListIdString>>()
+                {
+                    Data = Data,
+                    IsSuccess = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response<List<SelectListIdString>>()
+                {
+                    Message = _localizer[AuthLocalizationKeys.Error],
+                    Errors = new[] { ex.Message }
+                };
+            }
+        }
     }
 }
