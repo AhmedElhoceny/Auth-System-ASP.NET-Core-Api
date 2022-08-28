@@ -353,5 +353,33 @@ namespace El_Lo2ma_Services.Services.Auth
                 };
             }
         }
+
+        public async Task<Response<bool>> SwitchUserActivation(string userId )
+        {
+           try
+           {
+
+           
+            var user = (await _unitOfWork.User.GetFirstOrDefaultAsync(filter: x => x.Id == userId));
+
+            user.IsActive = !user.IsActive;
+            _unitOfWork.User.Update(user);
+            await _unitOfWork.CompleteAsync();
+                return new Response<bool>()
+                {
+                    Data = _localizer[AuthLocalizationKeys.],
+                    IsSuccess = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new Response<List<bool>>()
+                {
+                    Message = _localizer[AuthLocalizationKeys.Error],
+                    IsSuccess = false,
+                    Errors = new[] { ex.Message }
+                };
+            }
+        }
     }
 }

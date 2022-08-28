@@ -12,6 +12,8 @@ namespace El_Lo2ma_DomainModel.Models.Auth
     public class ApplicationUser : IdentityUser, IBaseEntity
     {
         public bool IsDeleted { get; set; }
+
+        public bool IsActive { get; set; }
         public DateTime InsertDate { get ; set; }
         public DateTime UpdateDate { get ; set; }
         public DateTime? DeleteDate { get; set; }
