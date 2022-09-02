@@ -63,6 +63,8 @@ namespace El_Lo2ma_AccessModel.Repositories
 
         public IRefreshToken RefreshTokens { get; set; }
 
+        public IAuthCodeRepository AuthCode { get; set; }
+
         public UnitOfWork(Lo2maContext DbCon)
         {
             _DbCon = DbCon;
@@ -86,6 +88,7 @@ namespace El_Lo2ma_AccessModel.Repositories
             TransactionLocation = new TransactionLocationRepository(_DbCon);
             DeliveryPayment = new DeliveryPaymentRepository(_DbCon);
             RefreshTokens = new RefreshTokenRepository(_DbCon);
+            AuthCode = new AuthCodeRepository(_DbCon);
         }
 
         public IDatabaseTransaction BeginTransaction() => new EntityDatabaseTransaction(_DbCon);

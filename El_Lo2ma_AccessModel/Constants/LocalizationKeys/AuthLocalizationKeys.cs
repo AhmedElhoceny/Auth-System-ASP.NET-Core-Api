@@ -13,5 +13,8 @@
         public static string ThisUserIsExist { get; set; } = "ThisUserIsExist";
         public static string UsernameOrPassWordIsWrong { get; set; } = "UsernameOrPassWordIsWrong";
         public static string Deleted { get; set; } = "Deleted";
+        public static string Activated { get; set; } = "Activated";
+        public static string DeActivated { get; set; } = "DeActivated";
+        public static string Done { get; set; } = "Done";
     }
 }

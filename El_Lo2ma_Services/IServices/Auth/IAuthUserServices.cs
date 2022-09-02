@@ -19,6 +19,9 @@ namespace El_Lo2ma_Services.IServices.Auth
         Task<Response<AuthUserUpdateRequest>> UpdateUser(AuthUserUpdateRequest model, string userId);
         Task<Response<List<AuthListOfUsersResponse>>> ListOfUsers();
         Task<Response<List<SelectListIdString>>> ListOfRoles();
-        Task<Response<bool>> SwitchUserActivation(string userId);
+        Task<Response<string>> SwitchUserActivation(string userId);
+        Task<Response<string>> ForgetPassWord(string userId);
+        Task<Response<string>> ForgetPassWordPost(string userId , string code);
+        Task<Response<string>> ChangePassWord(string userId,string NewPassWord);
     }
 }

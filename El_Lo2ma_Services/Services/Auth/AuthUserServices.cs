@@ -1,4 +1,5 @@
-﻿using El_Lo2ma.Constants.LocalizationKeys;
+﻿using El_Lo2ma.Constants;
+using El_Lo2ma.Constants.LocalizationKeys;
 using El_Lo2ma_AccessModel.Constants;
 using El_Lo2ma_DomainModel;
 using El_Lo2ma_DomainModel.DTOs;
@@ -9,6 +10,7 @@ using El_Lo2ma_DomainModel.DTOs.Responses.Auth;
 using El_Lo2ma_DomainModel.Interfaces;
 using El_Lo2ma_DomainModel.Models.Auth;
 using El_Lo2ma_Services.IServices.Auth;
+using El_Lo2ma_Services.IServices.General;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -32,16 +34,17 @@ namespace El_Lo2ma_Services.Services.Auth
         private readonly IStringLocalizer<ShareResource> _localizer;
         private readonly ILogger<ShareResource> _logger;
         private readonly IOptions<JWT> _jwt;
+        private readonly IEmailSender _emailSender;
 
-        public AuthUserServices(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IStringLocalizer<ShareResource> localizer, ILogger<ShareResource> logger, IOptions<JWT> jwt)
+        public AuthUserServices(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager, IStringLocalizer<ShareResource> localizer, ILogger<ShareResource> logger, IOptions<JWT> jwt, IEmailSender emailSender)
         {
             _unitOfWork = unitOfWork;
             _userManager = userManager;
             _localizer = localizer;
             _logger = logger;
             _jwt = jwt;
+            _emailSender = emailSender;
         }
-
         public async Task<Response<AuthUserLogInResponse>> UserLogIn(AuthUserLogInRequest model)
         {
             var SearchedUser = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: x => x.UserName == model.UserName, includeProperties: "RefreshTokenList");
@@ -83,7 +86,6 @@ namespace El_Lo2ma_Services.Services.Auth
                 Data = ResponseData
             };
         }
-
         public async Task<Response<AuthUserRegistrationResponse>> UserRegistrationAsync(AuthUserRegistrationRequest model)
         {
             try
@@ -170,7 +172,6 @@ namespace El_Lo2ma_Services.Services.Auth
                 };
             }
         }
-
         private async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
         {
             var UserData = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: y => y.Id == user.Id, includeProperties: "UserRoles,UserRoles.Role,UserType");
@@ -204,7 +205,6 @@ namespace El_Lo2ma_Services.Services.Auth
                 Token = Convert.ToBase64String(RenderNumber)
             };
         }
-
         public async Task<Response<AuthUserLogInResponse>> RefreshToken(string? RefreshToken)
         {
             try
@@ -248,7 +248,6 @@ namespace El_Lo2ma_Services.Services.Auth
                 };
             }
         }
-
         public async Task<Response<string>> RemoveUser(string userId)
         {
             try
@@ -272,7 +271,6 @@ namespace El_Lo2ma_Services.Services.Auth
                 };
             }
         }
-
         public async Task<Response<AuthUserUpdateRequest>> UpdateUser(AuthUserUpdateRequest model, string userId)
         {
             try
@@ -305,7 +303,6 @@ namespace El_Lo2ma_Services.Services.Auth
             }
 
         }
-
         public async Task<Response<List<AuthListOfUsersResponse>>> ListOfUsers()
         {
            try 
@@ -353,33 +350,101 @@ namespace El_Lo2ma_Services.Services.Auth
                 };
             }
         }
-
-        public async Task<Response<bool>> SwitchUserActivation(string userId )
+        public async Task<Response<string>> SwitchUserActivation(string userId )
         {
            try
            {
-
-           
             var user = (await _unitOfWork.User.GetFirstOrDefaultAsync(filter: x => x.Id == userId));
-
             user.IsActive = !user.IsActive;
             _unitOfWork.User.Update(user);
             await _unitOfWork.CompleteAsync();
-                return new Response<bool>()
+                return new Response<string>()
                 {
-                    Data = _localizer[AuthLocalizationKeys.],
+                    Message = user.IsActive ? _localizer[AuthLocalizationKeys.Activated] : _localizer[AuthLocalizationKeys.DeActivated],
                     IsSuccess = true
                 };
             }
             catch (Exception ex)
             {
-                return new Response<List<bool>>()
+                return new Response<string>()
                 {
                     Message = _localizer[AuthLocalizationKeys.Error],
                     IsSuccess = false,
                     Errors = new[] { ex.Message }
                 };
             }
+        }
+        public async Task<Response<string>> ForgetPassWord(string userId)
+        {
+            try
+            {
+                var searchedUser = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: x => x.Id == userId);
+                var verificationCode = CreateRandomCode(8);
+                await _unitOfWork.AuthCode.AddAsync(new AuthCode() { code = verificationCode, UserId = searchedUser.Id, IsActive = true });
+                await _emailSender.SendEmailAsync(searchedUser.Email, Messages.ApplicationName, Messages.VerificationMessage);
+                return new Response<string>()
+                {
+                    Message = _localizer[AuthLocalizationKeys.Done],
+                    IsSuccess = true
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(_localizer[AuthLocalizationKeys.Error, ex.Message]);
+                return new Response<string>()
+                {
+                    Message = _localizer[AuthLocalizationKeys.Error],
+                    Errors = new[] { ex.Message },
+                    IsSuccess = false
+                };
+            }
+        }
+        private string CreateRandomCode(int length)
+        {
+            const string src = "abcdefghijklmnopqrstuvwxyz0123456789";
+            var sb = new StringBuilder();
+            Random RNG = new Random();
+            for (var i = 0; i < length; i++)
+            {
+                var c = src[RNG.Next(0, src.Length)];
+                sb.Append(c);
+            }
+            return sb.ToString();
+        }
+        public async Task<Response<string>> ForgetPassWordPost(string userId, string code)
+        {
+            var activeUserCode = await _unitOfWork.AuthCode.GetFirstOrDefaultAsync(filter: x => x.UserId == userId && x.IsActive);
+            activeUserCode.IsActive = false;
+            _unitOfWork.AuthCode.Update(activeUserCode);
+            await _unitOfWork.CompleteAsync();
+            if (activeUserCode.code != code)
+                return new Response<string>()
+                {
+                    Message = _localizer[AuthLocalizationKeys.FailedProcess],
+                    IsSuccess = false
+                };
+            return new Response<string>()
+            {
+                Message = _localizer[AuthLocalizationKeys.Done],
+                IsSuccess = true
+            };
+        }
+        public async Task<Response<string>> ChangePassWord(string userId, string NewPassWord)
+        {
+            var searchedUser = await _unitOfWork.User.GetFirstOrDefaultAsync(filter: x => x.Id == userId);
+            var UserPassWordToken = await _userManager.GeneratePasswordResetTokenAsync(searchedUser);
+            var process = await _userManager.ChangePasswordAsync(searchedUser, UserPassWordToken, NewPassWord);
+            if (!process.Succeeded)
+                return new Response<string>()
+                {
+                    Message = _localizer[AuthLocalizationKeys.FailedProcess],
+                    IsSuccess = false
+                };
+            return new Response<string>()
+            {
+                Message = _localizer[AuthLocalizationKeys.Done],
+                IsSuccess = true
+            };
         }
     }
 }

@@ -66,6 +66,7 @@ namespace El_Lo2ma_AccessModel.Contexts
         public DbSet<Sofra> Sofra { get; set; }
         public DbSet<DeliveryPayment> DeliveryPayment { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<AuthCode> AuthCode { get; set; }
         #endregion
 
         public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())

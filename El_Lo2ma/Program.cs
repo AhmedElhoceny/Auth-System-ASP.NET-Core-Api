@@ -2,12 +2,15 @@
 using El_Lo2ma.Constants;
 using El_Lo2ma_AccessModel.Contexts;
 using El_Lo2ma_AccessModel.Repositories;
+using El_Lo2ma_DomainModel.DTOs;
 using El_Lo2ma_DomainModel.DTOs.JWT;
 using El_Lo2ma_DomainModel.Interfaces;
 using El_Lo2ma_DomainModel.Models.Auth;
 using El_Lo2ma_DomainModel.SwaggerFilter;
 using El_Lo2ma_Services.IServices.Auth;
+using El_Lo2ma_Services.IServices.General;
 using El_Lo2ma_Services.Services.Auth;
+using El_Lo2ma_Services.Services.General;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
@@ -39,6 +42,7 @@ builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 #region JWTConfigration
 //jwt configration
 builder.Services.Configure<JWT>(builder.Configuration.GetSection("JwtSettings"));
+builder.Services.Configure<MailSettings>(config.GetSection("MailSettings"));
 
 var jwtSettings = new JWT();
 builder.Configuration.Bind(nameof(jwtSettings), jwtSettings);
@@ -85,6 +89,7 @@ var localizationOptions =
 
 #region DependencyInjection
 builder.Services.AddScoped<IAuthUserServices, AuthUserServices>();
+builder.Services.AddScoped<IEmailSender, EmailSender>();
 #endregion
 
 

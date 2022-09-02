@@ -1,6 +1,7 @@
 ﻿using El_Lo2ma.Constants;
 using El_Lo2ma_DomainModel.DTOs.Requests.Auth;
 using El_Lo2ma_Services.IServices.Auth;
+using El_Lo2ma_Services.IServices.General;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +18,8 @@ namespace El_Lo2ma.Areas.Auth
         private readonly ILogger<AuthController> _logger;
         private readonly IAuthUserServices _userServices;
 
-        public AuthController(ILogger<AuthController> logger, IAuthUserServices UserServices)
+
+        public AuthController(ILogger<AuthController> logger, IAuthUserServices UserServices )
         {
             _logger = logger;
             _userServices = UserServices;
@@ -115,6 +117,44 @@ namespace El_Lo2ma.Areas.Auth
                 return StatusCode(500, Data);
             }
             return Ok(Data);
+        }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet(Routes.ChangeActivationUser)]
+        public async Task<IActionResult> ChangeActivationUser(string userId)
+        {
+            var Data = await _userServices.SwitchUserActivation(userId);
+            if (!Data.IsSuccess)
+            {
+                return StatusCode(500, Data);
+            }
+            return Ok(Data);
+        }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost(Routes.ForgetPassWordRequest)]
+        public async Task<IActionResult> ForgetPassWordRequest(string userId)
+        {
+            var data = await _userServices.ForgetPassWord(userId);
+            if(!data.IsSuccess)
+                return StatusCode(500, data);
+            return Ok(data);
+        }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost(Routes.ForgetPassWordPost)]
+        public async Task<IActionResult> ForgetPassWordPost(AuthForgetPassWordPostRequest model)
+        {
+            var data = await _userServices.ForgetPassWordPost(model.UserId , model.Code);
+            if (!data.IsSuccess)
+                return StatusCode(500, data);
+            return Ok(data);
+        }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost(Routes.ChangePassWord)]
+        public async Task<IActionResult> ChangePassWord(AuthChangePassWordRequest model)
+        {
+            var data = await _userServices.ChangePassWord(model.UserId, model.NewPassWord);
+            if (!data.IsSuccess)
+                return StatusCode(500, data);
+            return Ok(data);
         }
     }
 }

@@ -32,6 +32,7 @@ namespace El_Lo2ma_DomainModel.Interfaces
         public ITransactionLocationRepository TransactionLocation { get; }
         public IDeliveryPaymentRepository DeliveryPayment { get; }
         public IRefreshToken RefreshTokens { get; }
+        public IAuthCodeRepository AuthCode { get; }
         Task<int> CompleteAsync();
         int Complete();
     }
